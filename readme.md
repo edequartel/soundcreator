@@ -144,5 +144,4 @@ Stable
 Used for:
 - activity instructions
 - spoken feedback
-- story narration# soundcreator
-# soundcreator
+- story narration

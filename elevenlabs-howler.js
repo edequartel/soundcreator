@@ -16,8 +16,8 @@
     btnTogglePassword: $("btnTogglePassword"),
     authMsg: $("authMsg"),
     userEmail: $("userEmail"),
-    btnToggleStatusPanel: $("btnToggleStatusPanel"),
-    statusPanel: $("statusPanel"),
+    btnGitPull: $("btnGitPull"),
+    btnGitPullLabel: $("btnGitPullLabel"),
     voiceId: $("voiceId"),
     text: $("text"),
     modelId: $("modelId"),
@@ -29,7 +29,6 @@
     btnVoiceInfo: $("btnVoiceInfo"),
     btnPlay: $("btnPlay"),
     btnStop: $("btnStop"),
-    btnClear: $("btnClear"),
     btnClearText: $("clearTextBtn"), // <-- added
     btnDownload: $("btnDownload"),
     btnProduceMergedJwt: $("btnProduceMergedJwt"),
@@ -44,8 +43,6 @@
     creditLimit: $("creditLimit"),
     creditTier: $("creditTier"),
     creditMeta: $("creditMeta"),
-    status: $("status"),
-    log: $("log"),
   };
 
   let currentHowl = null;
@@ -477,17 +474,7 @@
     }
   }
 
-  function setStatus(msg) {
-    if (els.status) els.status.textContent = msg;
-  }
-
-  function setStatusPanelVisible(visible) {
-    if (!els.statusPanel) return;
-    els.statusPanel.hidden = !visible;
-    if (els.btnToggleStatusPanel) {
-      els.btnToggleStatusPanel.textContent = visible ? "Hide status" : "Show status";
-      els.btnToggleStatusPanel.setAttribute("aria-pressed", visible ? "true" : "false");
-    }
+  function setStatus() {
   }
 
   function hasCreditsUi() {
@@ -606,11 +593,7 @@
     setLastAudio(null);
   }
 
-  function log(msg) {
-    if (!els.log) return;
-    const ts = new Date().toISOString().slice(11, 19);
-    els.log.textContent += `[${ts}] ${msg}\n`;
-    els.log.scrollTop = els.log.scrollHeight;
+  function log() {
   }
 
   function cleanupAudio({ abortFetch = true } = {}) {
@@ -1139,9 +1122,6 @@
     } finally {
       els.btnPlay && (els.btnPlay.disabled = false);
       els.btnStop && (els.btnStop.disabled = false);
-      if (els.status && (els.status.textContent === "Downloading…" || els.status.textContent === "Streaming…")) {
-        setStatus("Idle");
-      }
     }
   }
 
@@ -1154,17 +1134,46 @@
     els.btnStop && (els.btnStop.disabled = true);
   }
 
-  function onClear() {
-    if (els.log) els.log.textContent = "";
-    stopMergedPlayback();
-    log("Log cleared.");
-  }
-
   function onClearText() {
     if (!els.text) return;
     els.text.value = "";
     els.text.focus();
     log("Text cleared.");
+  }
+
+  function setGitPullLabel(text) {
+    if (els.btnGitPullLabel) {
+      els.btnGitPullLabel.textContent = text;
+    } else if (els.btnGitPull) {
+      els.btnGitPull.textContent = text;
+    }
+  }
+
+  async function onGitPull() {
+    if (!els.btnGitPull) return;
+    els.btnGitPull.disabled = true;
+    setGitPullLabel("Pulling...");
+    try {
+      const res = await fetch("./git_pull.php", {
+        method: "POST",
+        headers: { "Accept": "application/json" },
+      });
+      const body = await res.json().catch(() => null);
+      const output = String(body?.output || "").trim();
+      if (!res.ok || body?.ok === false) {
+        throw new Error(body?.error || output || `Git pull failed (${res.status}).`);
+      }
+      log(output ? `Git pull done:\n${output}` : "Git pull done.");
+      setGitPullLabel("Pulled");
+    } catch (e) {
+      log(`Git pull failed: ${e?.message || e}`);
+      setGitPullLabel("Pull failed");
+    } finally {
+      window.setTimeout(() => {
+        els.btnGitPull.disabled = false;
+        setGitPullLabel("Git Pull");
+      }, 1400);
+    }
   }
 
   async function onDownload() {
@@ -1408,7 +1417,7 @@
 
     const segments = parseMixedTextSegments(text);
     if (segments.some((seg) => seg.type !== "tts")) {
-      throw new Error("Public mode supports plain text-to-speech. Log in to use mixed speech/general tokens.");
+      throw new Error("Local mode supports plain text-to-speech.");
     }
 
     if (publicMergedObjectUrl) {
@@ -1428,8 +1437,8 @@
   // Wire up
   els.btnPlay?.addEventListener("click", onPlay);
   els.btnStop?.addEventListener("click", onStop);
-  els.btnClear?.addEventListener("click", onClear);
   els.btnClearText?.addEventListener("click", onClearText); // <-- added
+  els.btnGitPull?.addEventListener("click", onGitPull);
   els.btnDownload?.addEventListener("click", onDownload);
   els.btnProduceMergedJwt?.addEventListener("click", onProduceMergedJwt);
   els.btnPlayMerged?.addEventListener("click", onPlayMerged);
@@ -1438,10 +1447,6 @@
   els.btnDownloadSplitZip?.addEventListener("click", onDownloadSplitZip);
   els.btnRefreshCredits?.addEventListener("click", () => { void loadElevenLabsCredits(); });
   els.btnVoiceInfo?.addEventListener("click", onVoiceInfoClick);
-  els.btnToggleStatusPanel?.addEventListener("click", () => {
-    const isHidden = !!els.statusPanel?.hidden;
-    setStatusPanelVisible(isHidden);
-  });
   els.btnSignIn?.addEventListener("click", () => { void signIn(); });
   els.btnSignOut?.addEventListener("click", () => { void signOut(); });
   els.email?.addEventListener("keydown", (event) => {
@@ -1473,12 +1478,11 @@
   loadPrefs();
   wirePasswordToggle();
   if (requiresAuth) setSignedOutState();
-  setStatusPanelVisible(false);
 
   void (async () => {
     try {
-      if (!sb) sb = await initSupabaseClient();
       if (requiresAuth) {
+        if (!sb) sb = await initSupabaseClient();
         sb.auth.onAuthStateChange((_event, session) => {
           void refreshAuthUI(session ?? null);
         });
