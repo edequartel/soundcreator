@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Audio</title>
+  <title>audiocreator</title>
   <link rel="stylesheet" href="./tabler/core/dist/css/tabler.min.css" />
   <link rel="stylesheet" href="./tabler/icons-webfont/dist/tabler-icons.min.css" />
   <link rel="stylesheet" href="./elevenlabs-howler.css" />
@@ -16,7 +16,7 @@
           <span class="avatar avatar-sm bg-primary-lt me-2">
             <i class="ti ti-wave-sine"></i>
           </span>
-          Audio
+          audiocreator
         </div>
         <div class="ms-auto">
           <button id="btnGitPull" type="button" class="btn">
@@ -28,23 +28,9 @@
     </header>
 
     <div class="page-wrapper">
-      <div class="page-header d-print-none">
-        <div class="container-xl">
-          <div class="row g-2 align-items-center">
-            <div class="col">
-              <div class="page-pretitle">ElevenLabs</div>
-              <h1 class="page-title">Audio</h1>
-            </div>
-          </div>
-        </div>
-      </div>
-
       <div class="page-body">
         <main class="container-xl">
           <div class="card audio-card">
-            <div class="card-header">
-              <h2 class="card-title">Text to speech</h2>
-            </div>
             <div class="card-body">
               <div class="row g-3">
                 <div class="col-12 col-md-8">
@@ -81,6 +67,10 @@
                     </button>
 
                     <div class="btn-list audio-actions">
+                      <button id="btnToggleLog" class="btn" type="button" aria-controls="logPanel" aria-expanded="false">
+                        <i class="ti ti-terminal-2 me-1"></i>
+                        <span id="btnToggleLogLabel">Show logging</span>
+                      </button>
                       <button id="btnProduceMergedJwt" class="btn btn-primary" type="button">
                         <i class="ti ti-player-record-filled me-1"></i>
                         Produce
@@ -105,15 +95,31 @@
                   </div>
                 </div>
 
+                <div id="logPanel" class="col-12" hidden>
+                  <div class="card bg-dark-lt">
+                    <div class="card-header py-2">
+                      <h3 class="card-title">
+                        <i class="ti ti-terminal-2 me-2"></i>
+                        Logging
+                      </h3>
+                      <div class="card-actions">
+                        <button id="btnClearLog" class="btn btn-sm" type="button">
+                          <i class="ti ti-trash me-1"></i>
+                          Clear
+                        </button>
+                      </div>
+                    </div>
+                    <div class="card-body p-0">
+                      <pre id="log" class="audio-log" aria-live="polite"></pre>
+                    </div>
+                  </div>
+                </div>
+
                 <div class="col-12">
                   <div class="audio-preferences">
                     <label class="form-check form-switch">
                       <input id="chkRememberVoice" class="form-check-input" type="checkbox" checked />
                       <span class="form-check-label">Remember selected voice</span>
-                    </label>
-                    <label class="form-check form-switch">
-                      <input id="chkTryMSE" class="form-check-input" type="checkbox" checked />
-                      <span class="form-check-label">Try true streaming first</span>
                     </label>
                   </div>
                 </div>

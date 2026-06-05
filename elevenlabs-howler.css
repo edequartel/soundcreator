@@ -31,6 +31,20 @@
   padding-top: 0.25rem;
 }
 
+.audio-log {
+  min-height: 9rem;
+  max-height: 18rem;
+  margin: 0;
+  padding: 1rem;
+  overflow: auto;
+  color: var(--tblr-light);
+  background: var(--tblr-dark);
+  border-radius: 0 0 var(--tblr-card-border-radius) var(--tblr-card-border-radius);
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  white-space: pre-wrap;
+}
+
 .navbar-brand .avatar {
   --tblr-avatar-size: 2rem;
 }

@@ -105,7 +105,6 @@
       anonKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpyY2R5emNmc2RsbXFxd2RoY3RrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjgxOTgyNzUsImV4cCI6MjA4Mzc3NDI3NX0.voT1eh_FbBkrv7ZMN7B8VRRbrab7tyx3eV6JuXy4ySs"
     });
     const CONFIG_URLS_REMOTE = [
-      "https://mpop-ssoc.vercel.app/api/supabase-config.js",
       "https://www.tastenbraille.com/braillestudio/api/supabase-config",
     ];
     let cfg = LOCAL_SUPABASE_CONFIG;

@@ -18,6 +18,11 @@
     userEmail: $("userEmail"),
     btnGitPull: $("btnGitPull"),
     btnGitPullLabel: $("btnGitPullLabel"),
+    btnToggleLog: $("btnToggleLog"),
+    btnToggleLogLabel: $("btnToggleLogLabel"),
+    btnClearLog: $("btnClearLog"),
+    logPanel: $("logPanel"),
+    log: $("log"),
     voiceId: $("voiceId"),
     text: $("text"),
     modelId: $("modelId"),
@@ -25,7 +30,6 @@
     mergeGapMs: $("mergeGapMs"),
     chkRememberVoice: $("chkRememberVoice"),
     chkRememberModel: $("chkRememberModel"),
-    chkTryMSE: $("chkTryMSE"),
     btnVoiceInfo: $("btnVoiceInfo"),
     btnPlay: $("btnPlay"),
     btnStop: $("btnStop"),
@@ -101,7 +105,6 @@
       anonKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpyY2R5emNmc2RsbXFxd2RoY3RrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjgxOTgyNzUsImV4cCI6MjA4Mzc3NDI3NX0.voT1eh_FbBkrv7ZMN7B8VRRbrab7tyx3eV6JuXy4ySs"
     });
     const CONFIG_URLS_REMOTE = [
-      "https://mpop-ssoc.vercel.app/api/supabase-config.js",
       "https://www.tastenbraille.com/braillestudio/api/supabase-config",
     ];
     let cfg = LOCAL_SUPABASE_CONFIG;
@@ -593,7 +596,11 @@
     setLastAudio(null);
   }
 
-  function log() {
+  function log(msg) {
+    if (!els.log) return;
+    const ts = new Date().toISOString().slice(11, 19);
+    els.log.textContent += `[${ts}] ${msg}\n`;
+    els.log.scrollTop = els.log.scrollHeight;
   }
 
   function cleanupAudio({ abortFetch = true } = {}) {
@@ -817,6 +824,15 @@
     }, 0);
   }
 
+  function notifyDownloadFinished(filename, destination = "Downloads folder") {
+    const fileText = filename ? `\nFile: ${filename}` : "";
+    window.alert(`Download finished.${fileText}\nFolder: ${destination}`);
+  }
+
+  function browserDownloadDestination() {
+    return "Downloads folder (or your browser's configured download folder)";
+  }
+
   function buildSplitFilename(index, rawText) {
     const textPart = safeFilenamePart(rawText).slice(0, 40) || "part";
     return `elevenlabs-part-${String(index).padStart(3, "0")}-${textPart}.mp3`;
@@ -1009,6 +1025,10 @@
         await sleep(750);
       }
       log(`Split download klaar: ${completed}/${groups.length} bestanden gestart.`);
+      notifyDownloadFinished(
+        `${completed}/${groups.length} MP3 files`,
+        browserDownloadDestination()
+      );
       setStatus("Idle");
     } catch (e) {
       log(`Split download failed: ${e?.message || e}`);
@@ -1051,6 +1071,7 @@
       const zipFilename = `elevenlabs-split-${String(groups.length).padStart(3, "0")}-files.zip`;
       downloadBlobViaAnchor(zipBlob, zipFilename);
       log(`ZIP download started: ${zipFilename} (${completed}/${groups.length} bestanden).`);
+      notifyDownloadFinished(zipFilename, browserDownloadDestination());
       setStatus("Idle");
     } catch (e) {
       log(`Split ZIP failed: ${e?.message || e}`);
@@ -1141,6 +1162,24 @@
     log("Text cleared.");
   }
 
+  function setLogVisible(visible) {
+    if (!els.logPanel) return;
+    els.logPanel.hidden = !visible;
+    els.btnToggleLog?.setAttribute("aria-expanded", visible ? "true" : "false");
+    if (els.btnToggleLogLabel) {
+      els.btnToggleLogLabel.textContent = visible ? "Hide logging" : "Show logging";
+    }
+  }
+
+  function onToggleLog() {
+    setLogVisible(!!els.logPanel?.hidden);
+  }
+
+  function onClearLog() {
+    if (els.log) els.log.textContent = "";
+    log("Log cleared.");
+  }
+
   function setGitPullLabel(text) {
     if (els.btnGitPullLabel) {
       els.btnGitPullLabel.textContent = text;
@@ -1191,6 +1230,7 @@
 
       if (method === "share") {
         log(`Opened Share Sheet for: ${filename} (use "Save to Files").`);
+        notifyDownloadFinished(filename, "selected folder in Save to Files");
         setStatus("Idle");
         return;
       }
@@ -1202,6 +1242,7 @@
         log(`Download started: ${filename}`);
       }
 
+      notifyDownloadFinished(filename, browserDownloadDestination());
       setStatus("Idle");
     } catch (e) {
       log(`Download failed: ${e?.message || e}`);
@@ -1213,8 +1254,35 @@
     if (!els.btnProduceMergedJwt) return;
     els.btnProduceMergedJwt.disabled = !!busy;
     els.btnProduceMergedJwt.textContent = busy ? label : "Produce";
-    if (els.btnPlayMerged) els.btnPlayMerged.disabled = !!busy;
-    if (els.btnDownloadMergedFile) els.btnDownloadMergedFile.disabled = !!busy;
+    updateProducedAudioButtons(!!busy);
+    updateSplitDownloadButtons(!!busy);
+  }
+
+  function hasProducedAudio() {
+    return !!(publicMergedObjectUrl || mergedAudioVersion);
+  }
+
+  function updateProducedAudioButtons(isProducing = false) {
+    const canUseAudio = hasProducedAudio() && !isProducing;
+    if (els.btnPlayMerged) els.btnPlayMerged.disabled = !canUseAudio;
+    if (els.btnDownloadMergedFile) els.btnDownloadMergedFile.disabled = !canUseAudio;
+  }
+
+  function updateSplitDownloadButtons(isProducing = false) {
+    if (els.btnDownloadSplitFiles) els.btnDownloadSplitFiles.disabled = !!isProducing;
+    if (els.btnDownloadSplitZip) els.btnDownloadSplitZip.disabled = !!isProducing;
+  }
+
+  function clearProducedAudioForNewRun() {
+    stopMergedPlayback();
+    if (publicMergedObjectUrl) {
+      try { URL.revokeObjectURL(publicMergedObjectUrl); } catch {}
+      publicMergedObjectUrl = null;
+    }
+    mergedAudioVersion = "";
+    clearLastAudio();
+    setMergedPlayButtonText(false);
+    updateProducedAudioButtons(true);
   }
 
   function getMergedAudioUrl() {
@@ -1270,12 +1338,14 @@
       if (publicMergedObjectUrl && lastAudioBlob) {
         downloadBlobViaAnchor(lastAudioBlob, lastAudioFilename || "elevenlabs.mp3");
         log(`Download started: ${lastAudioFilename || "elevenlabs.mp3"}`);
+        notifyDownloadFinished(lastAudioFilename || "elevenlabs.mp3", browserDownloadDestination());
         return;
       }
       setStatus("Downloading merged…");
       const url = `${DOWNLOAD_MERGED_API_URL}?t=${Date.now()}`;
       window.location.assign(url);
       log(`Download requested via API: ${url}`);
+      notifyDownloadFinished("merged.mp3", browserDownloadDestination());
       setStatus("Idle");
     } catch (e) {
       log(`Download merged failed: ${e?.message || e}`);
@@ -1369,6 +1439,7 @@
       const outputUrl = mergeBody?.outputUrl || mergeBody?.url || buildAudioUrl(`${MIXED_MERGE_OUTPUT_DIR}${MIXED_MERGE_OUTPUT_FILENAME}`);
       mergedAudioVersion = String(Date.now());
       stopMergedPlayback();
+      updateProducedAudioButtons(false);
       log(`Merged file produced: ${outputUrl}`);
       setStatus("Idle");
     } catch (e) {
@@ -1380,6 +1451,7 @@
   }
 
   async function onProduceMergedJwt() {
+    clearProducedAudioForNewRun();
     setProduceMergedJwtButtonBusy(true, "Producing...");
     try {
       if (!requiresAuth) {
@@ -1420,16 +1492,12 @@
       throw new Error("Local mode supports plain text-to-speech.");
     }
 
-    if (publicMergedObjectUrl) {
-      try { URL.revokeObjectURL(publicMergedObjectUrl); } catch {}
-      publicMergedObjectUrl = null;
-    }
-
     setStatus("Producing...");
     const blob = await synthesizeTextToMp3BlobViaTtsProxy({ voiceId, text, modelId, outputFormat });
     setLastAudio(blob, { voiceId, modelId });
     publicMergedObjectUrl = URL.createObjectURL(blob);
     stopMergedPlayback();
+    updateProducedAudioButtons(false);
     log(`Local ElevenLabs audio produced: ${lastAudioFilename || "elevenlabs.mp3"}`);
     setStatus("Idle");
   }
@@ -1438,6 +1506,8 @@
   els.btnPlay?.addEventListener("click", onPlay);
   els.btnStop?.addEventListener("click", onStop);
   els.btnClearText?.addEventListener("click", onClearText); // <-- added
+  els.btnToggleLog?.addEventListener("click", onToggleLog);
+  els.btnClearLog?.addEventListener("click", onClearLog);
   els.btnGitPull?.addEventListener("click", onGitPull);
   els.btnDownload?.addEventListener("click", onDownload);
   els.btnProduceMergedJwt?.addEventListener("click", onProduceMergedJwt);
@@ -1474,10 +1544,12 @@
   // Init
   if (els.btnStop) els.btnStop.disabled = true;
   if (els.btnDownload) els.btnDownload.disabled = true;
+  updateProducedAudioButtons(false);
 
   loadPrefs();
   wirePasswordToggle();
   if (requiresAuth) setSignedOutState();
+  setLogVisible(false);
 
   void (async () => {
     try {
