@@ -135,6 +135,29 @@
     </div>
   </div>
 
+  <div id="gitPullModal" class="modal modal-blur fade" tabindex="-1" aria-labelledby="gitPullModalTitle" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 id="gitPullModalTitle" class="modal-title">
+            <i class="ti ti-git-pull-request me-2"></i>
+            Git Pull
+          </h2>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div id="gitPullStatus" class="alert alert-info mb-3" role="status">
+            Waiting to start.
+          </div>
+          <pre id="gitPullOutput" class="git-pull-output">No output yet.</pre>
+        </div>
+        <div class="modal-footer">
+          <button id="btnCloseGitPullModal" type="button" class="btn" data-bs-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/howler@2.2.4/dist/howler.min.js"></script>
   <script src="./tabler/core/dist/js/tabler.min.js"></script>

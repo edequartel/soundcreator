@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-const ELEVENLABS_CONFIG_PATH = '/Users/ericdequartel/Library/Containers/com.eltima.cmd1.mas/Data/.COVolumes/_Bluehost/private/elevenlabs_config.php';
+const LOCAL_ELEVENLABS_CONFIG_PATH = '/Users/ericdequartel/Library/Containers/com.eltima.cmd1.mas/Data/.COVolumes/_Bluehost/private/elevenlabs_config.php';
 
 function json_response(array $payload, int $status = 200): never
 {
@@ -12,13 +12,49 @@ function json_response(array $payload, int $status = 200): never
     exit;
 }
 
-function load_config(): array
+function candidate_config_paths(): array
 {
-    if (!is_readable(ELEVENLABS_CONFIG_PATH)) {
-        json_response(['error' => 'ElevenLabs config is not readable.'], 500);
+    $paths = [];
+
+    $envPath = getenv('ELEVENLABS_CONFIG_PATH');
+    if (is_string($envPath) && trim($envPath) !== '') {
+        $paths[] = trim($envPath);
     }
 
-    $config = require ELEVENLABS_CONFIG_PATH;
+    $serverEnvPath = $_SERVER['ELEVENLABS_CONFIG_PATH'] ?? '';
+    if (is_string($serverEnvPath) && trim($serverEnvPath) !== '') {
+        $paths[] = trim($serverEnvPath);
+    }
+
+    $documentRoot = realpath((string)($_SERVER['DOCUMENT_ROOT'] ?? ''));
+    if ($documentRoot !== false) {
+        $paths[] = dirname($documentRoot) . '/private/elevenlabs_config.php';
+    }
+
+    $paths[] = dirname(__DIR__, 2) . '/private/elevenlabs_config.php';
+    $paths[] = dirname(__DIR__) . '/private/elevenlabs_config.php';
+
+    if (PHP_OS_FAMILY === 'Darwin') {
+        $paths[] = LOCAL_ELEVENLABS_CONFIG_PATH;
+    }
+
+    return array_values(array_unique($paths));
+}
+
+function resolve_config_path(): string
+{
+    foreach (candidate_config_paths() as $path) {
+        if (is_readable($path)) {
+            return $path;
+        }
+    }
+
+    json_response(['error' => 'ElevenLabs config is not readable from the private server path.'], 500);
+}
+
+function load_config(): array
+{
+    $config = require resolve_config_path();
     if (!is_array($config)) {
         json_response(['error' => 'ElevenLabs config must return an array.'], 500);
     }
