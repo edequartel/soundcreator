@@ -20,6 +20,8 @@
     btnGitPullLabel: $("btnGitPullLabel"),
     btnToggleLog: $("btnToggleLog"),
     btnToggleLogLabel: $("btnToggleLogLabel"),
+    btnCopyLog: $("btnCopyLog"),
+    btnCopyLogLabel: $("btnCopyLogLabel"),
     btnClearLog: $("btnClearLog"),
     logPanel: $("logPanel"),
     log: $("log"),
@@ -1180,6 +1182,34 @@
     log("Log cleared.");
   }
 
+  function setCopyLogLabel(text) {
+    if (els.btnCopyLogLabel) {
+      els.btnCopyLogLabel.textContent = text;
+    } else if (els.btnCopyLog) {
+      els.btnCopyLog.textContent = text;
+    }
+  }
+
+  async function onCopyLog() {
+    if (!els.log) return;
+    const text = els.log.textContent || "";
+    if (!text.trim()) {
+      setCopyLogLabel("Empty");
+      window.setTimeout(() => setCopyLogLabel("Copy"), 1200);
+      return;
+    }
+
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopyLogLabel("Copied");
+    } catch (e) {
+      log(`Copy log failed: ${e?.message || e}`);
+      setCopyLogLabel("Copy failed");
+    } finally {
+      window.setTimeout(() => setCopyLogLabel("Copy"), 1200);
+    }
+  }
+
   function setGitPullLabel(text) {
     if (els.btnGitPullLabel) {
       els.btnGitPullLabel.textContent = text;
@@ -1507,6 +1537,7 @@
   els.btnStop?.addEventListener("click", onStop);
   els.btnClearText?.addEventListener("click", onClearText); // <-- added
   els.btnToggleLog?.addEventListener("click", onToggleLog);
+  els.btnCopyLog?.addEventListener("click", () => { void onCopyLog(); });
   els.btnClearLog?.addEventListener("click", onClearLog);
   els.btnGitPull?.addEventListener("click", onGitPull);
   els.btnDownload?.addEventListener("click", onDownload);

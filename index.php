@@ -103,6 +103,10 @@
                         Logging
                       </h3>
                       <div class="card-actions">
+                        <button id="btnCopyLog" class="btn btn-sm" type="button">
+                          <i class="ti ti-copy me-1"></i>
+                          <span id="btnCopyLogLabel">Copy</span>
+                        </button>
                         <button id="btnClearLog" class="btn btn-sm" type="button">
                           <i class="ti ti-trash me-1"></i>
                           Clear
