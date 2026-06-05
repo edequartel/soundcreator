@@ -47,20 +47,6 @@
   white-space: pre-wrap;
 }
 
-.git-pull-output {
-  min-height: 10rem;
-  max-height: 22rem;
-  margin: 0;
-  padding: 1rem;
-  overflow: auto;
-  color: var(--tblr-light);
-  background: var(--tblr-dark);
-  border-radius: var(--tblr-border-radius);
-  font-size: 0.8125rem;
-  line-height: 1.5;
-  white-space: pre-wrap;
-}
-
 .navbar-brand .avatar {
   --tblr-avatar-size: 2rem;
 }

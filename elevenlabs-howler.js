@@ -18,10 +18,6 @@
     userEmail: $("userEmail"),
     btnGitPull: $("btnGitPull"),
     btnGitPullLabel: $("btnGitPullLabel"),
-    gitPullModal: $("gitPullModal"),
-    gitPullStatus: $("gitPullStatus"),
-    gitPullOutput: $("gitPullOutput"),
-    btnCloseGitPullModal: $("btnCloseGitPullModal"),
     btnToggleLog: $("btnToggleLog"),
     btnToggleLogLabel: $("btnToggleLogLabel"),
     btnCopyLog: $("btnCopyLog"),
@@ -1223,39 +1219,6 @@
     }
   }
 
-  function gitPullModalInstance() {
-    if (!els.gitPullModal || typeof window.bootstrap === "undefined") return null;
-    return window.bootstrap.Modal.getOrCreateInstance(els.gitPullModal, {
-      backdrop: "static",
-    });
-  }
-
-  function showGitPullModal() {
-    const modal = gitPullModalInstance();
-    if (modal) {
-      modal.show();
-      return;
-    }
-    if (els.gitPullModal) {
-      els.gitPullModal.classList.add("show");
-      els.gitPullModal.style.display = "block";
-      els.gitPullModal.removeAttribute("aria-hidden");
-    }
-  }
-
-  function setGitPullModalState(state, message, output = "") {
-    if (els.gitPullStatus) {
-      els.gitPullStatus.className = `alert alert-${state} mb-3`;
-      els.gitPullStatus.textContent = message;
-    }
-    if (els.gitPullOutput) {
-      els.gitPullOutput.textContent = output || "No output.";
-    }
-    if (els.btnCloseGitPullModal) {
-      els.btnCloseGitPullModal.disabled = state === "info";
-    }
-  }
-
   function logGitPullMessage(message, output = "") {
     const cleanOutput = String(output || "").trim();
     log(cleanOutput ? `${message}\n${cleanOutput}` : message);
@@ -1265,9 +1228,7 @@
     if (!els.btnGitPull) return;
     els.btnGitPull.disabled = true;
     setGitPullLabel("Pulling...");
-    setGitPullModalState("info", "Git pull is running...", "Waiting for command output...");
     logGitPullMessage("Git pull started.");
-    showGitPullModal();
     try {
       const res = await fetch("./git_pull.php", {
         method: "POST",
@@ -1281,12 +1242,10 @@
         throw new Error(output ? `${error}\n${output}` : error);
       }
       logGitPullMessage("Git pull finished successfully.", output || "Already up to date.");
-      setGitPullModalState("success", "Git pull finished successfully.", output || "Already up to date.");
       setGitPullLabel("Pulled");
     } catch (e) {
       const error = e?.message || String(e);
       logGitPullMessage("Git pull failed.", error);
-      setGitPullModalState("danger", "Git pull failed.", error);
       setGitPullLabel("Pull failed");
     } finally {
       window.setTimeout(() => {
