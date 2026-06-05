@@ -1256,11 +1256,17 @@
     }
   }
 
+  function logGitPullMessage(message, output = "") {
+    const cleanOutput = String(output || "").trim();
+    log(cleanOutput ? `${message}\n${cleanOutput}` : message);
+  }
+
   async function onGitPull() {
     if (!els.btnGitPull) return;
     els.btnGitPull.disabled = true;
     setGitPullLabel("Pulling...");
     setGitPullModalState("info", "Git pull is running...", "Waiting for command output...");
+    logGitPullMessage("Git pull started.");
     showGitPullModal();
     try {
       const res = await fetch("./git_pull.php", {
@@ -1270,14 +1276,16 @@
       const body = await res.json().catch(() => null);
       const output = String(body?.output || "").trim();
       if (!res.ok || body?.ok === false) {
-        throw new Error(body?.error || output || `Git pull failed (${res.status}).`);
+        const error = body?.error || `Git pull failed (${res.status}).`;
+        logGitPullMessage(error, output);
+        throw new Error(output ? `${error}\n${output}` : error);
       }
-      log(output ? `Git pull done:\n${output}` : "Git pull done.");
+      logGitPullMessage("Git pull finished successfully.", output || "Already up to date.");
       setGitPullModalState("success", "Git pull finished successfully.", output || "Already up to date.");
       setGitPullLabel("Pulled");
     } catch (e) {
       const error = e?.message || String(e);
-      log(`Git pull failed: ${error}`);
+      logGitPullMessage("Git pull failed.", error);
       setGitPullModalState("danger", "Git pull failed.", error);
       setGitPullLabel("Pull failed");
     } finally {
