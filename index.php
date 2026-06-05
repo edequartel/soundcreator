@@ -1,3 +1,23 @@
+<?php
+declare(strict_types=1);
+
+require __DIR__ . '/auth_guard.php';
+
+$loginError = '';
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $action = (string)($_POST['action'] ?? 'login');
+    if ($action === 'logout') {
+        audiocreator_logout();
+    } elseif (audiocreator_login((string)($_POST['password'] ?? ''))) {
+        header('Location: ' . strtok((string)($_SERVER['REQUEST_URI'] ?? 'index.php'), '?'));
+        exit;
+    } else {
+        $loginError = 'Wrong password.';
+    }
+}
+
+$isAuthenticated = audiocreator_is_authenticated();
+?>
 <!doctype html>
 <html lang="en">
 <head>
@@ -9,6 +29,31 @@
   <link rel="stylesheet" href="./elevenlabs-howler.css" />
 </head>
 <body>
+<?php if (!$isAuthenticated): ?>
+  <div class="page page-center">
+    <div class="container-tight py-4">
+      <form class="card card-md" method="post" autocomplete="off">
+        <input type="hidden" name="action" value="login" />
+        <div class="card-body">
+          <div class="text-center mb-4">
+            <span class="avatar avatar-lg bg-primary-lt">
+              <i class="ti ti-wave-sine"></i>
+            </span>
+          </div>
+          <h1 class="h2 text-center mb-4">audiocreator</h1>
+          <?php if ($loginError !== ''): ?>
+            <div class="alert alert-danger" role="alert"><?= htmlspecialchars($loginError, ENT_QUOTES, 'UTF-8') ?></div>
+          <?php endif; ?>
+          <div class="mb-3">
+            <label class="form-label" for="password">Password</label>
+            <input id="password" class="form-control" type="password" name="password" autofocus required />
+          </div>
+          <button class="btn btn-primary w-100" type="submit">Open</button>
+        </div>
+      </form>
+    </div>
+  </div>
+<?php else: ?>
   <div class="page">
     <header class="navbar navbar-expand-md d-print-none">
       <div class="container-xl">
@@ -18,11 +63,17 @@
           </span>
           audiocreator
         </div>
-        <div class="ms-auto">
+        <div class="ms-auto d-flex gap-2">
           <button id="btnGitPull" type="button" class="btn">
             <i class="ti ti-git-pull-request me-1"></i>
             <span id="btnGitPullLabel">Git Pull</span>
           </button>
+          <form method="post">
+            <input type="hidden" name="action" value="logout" />
+            <button type="submit" class="btn btn-icon" aria-label="Logout">
+              <i class="ti ti-logout"></i>
+            </button>
+          </form>
         </div>
       </div>
     </header>
@@ -65,12 +116,11 @@
                       <i class="ti ti-eraser me-1"></i>
                       Clear text
                     </button>
+                    <button id="btnToggleLog" class="btn btn-icon" type="button" aria-label="Show logging" aria-controls="logPanel" aria-expanded="false">
+                      <i class="ti ti-terminal-2"></i>
+                    </button>
 
                     <div class="btn-list audio-actions">
-                      <button id="btnToggleLog" class="btn" type="button" aria-controls="logPanel" aria-expanded="false">
-                        <i class="ti ti-terminal-2 me-1"></i>
-                        <span id="btnToggleLogLabel">Show logging</span>
-                      </button>
                       <button id="btnProduceMergedJwt" class="btn btn-primary" type="button">
                         <i class="ti ti-player-record-filled me-1"></i>
                         Produce
@@ -157,10 +207,13 @@
       </div>
     </div>
   </div>
+<?php endif; ?>
 
   <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/howler@2.2.4/dist/howler.min.js"></script>
   <script src="./tabler/core/dist/js/tabler.min.js"></script>
+<?php if ($isAuthenticated): ?>
   <script src="./elevenlabs-howler.js"></script>
+<?php endif; ?>
 </body>
 </html>

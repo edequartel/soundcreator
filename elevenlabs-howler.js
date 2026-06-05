@@ -1172,6 +1172,7 @@
     if (!els.logPanel) return;
     els.logPanel.hidden = !visible;
     els.btnToggleLog?.setAttribute("aria-expanded", visible ? "true" : "false");
+    els.btnToggleLog?.setAttribute("aria-label", visible ? "Hide logging" : "Show logging");
     if (els.btnToggleLogLabel) {
       els.btnToggleLogLabel.textContent = visible ? "Hide logging" : "Show logging";
     }

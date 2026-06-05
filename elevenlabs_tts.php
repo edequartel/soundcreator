@@ -1,6 +1,10 @@
 <?php
 declare(strict_types=1);
 
+require __DIR__ . '/auth_guard.php';
+
+audiocreator_require_json_auth();
+
 const LOCAL_ELEVENLABS_CONFIG_PATH = '/Users/ericdequartel/Library/Containers/com.eltima.cmd1.mas/Data/.COVolumes/_Bluehost/private/elevenlabs_config.php';
 
 function json_response(array $payload, int $status = 200): never
