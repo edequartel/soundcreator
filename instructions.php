@@ -12,6 +12,106 @@ $instructions = file_get_contents(__DIR__ . '/readme.md');
 if ($instructions === false) {
     $instructions = 'Instructions could not be loaded.';
 }
+
+function render_inline_markdown(string $text): string
+{
+    $escaped = htmlspecialchars($text, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+    $escaped = preg_replace('/`([^`]+)`/', '<code>$1</code>', $escaped) ?? $escaped;
+    return preg_replace('/\*\*([^*]+)\*\*/', '<strong>$1</strong>', $escaped) ?? $escaped;
+}
+
+function render_markdown(string $markdown): string
+{
+    $html = [];
+    $paragraph = [];
+    $listType = null;
+    $inCodeBlock = false;
+    $codeLines = [];
+
+    $flushParagraph = static function () use (&$html, &$paragraph): void {
+        if ($paragraph === []) {
+            return;
+        }
+        $html[] = '<p>' . render_inline_markdown(implode(' ', $paragraph)) . '</p>';
+        $paragraph = [];
+    };
+
+    $closeList = static function () use (&$html, &$listType): void {
+        if ($listType === null) {
+            return;
+        }
+        $html[] = '</' . $listType . '>';
+        $listType = null;
+    };
+
+    foreach (preg_split('/\R/', $markdown) ?: [] as $line) {
+        if (preg_match('/^```/', $line)) {
+            $flushParagraph();
+            $closeList();
+            if ($inCodeBlock) {
+                $html[] = '<pre><code>' . htmlspecialchars(implode("\n", $codeLines), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . '</code></pre>';
+                $codeLines = [];
+                $inCodeBlock = false;
+            } else {
+                $inCodeBlock = true;
+            }
+            continue;
+        }
+
+        if ($inCodeBlock) {
+            $codeLines[] = $line;
+            continue;
+        }
+
+        if (trim($line) === '') {
+            $flushParagraph();
+            $closeList();
+            continue;
+        }
+
+        if (preg_match('/^(#{1,6})\s+(.+)$/', $line, $matches)) {
+            $flushParagraph();
+            $closeList();
+            $level = strlen($matches[1]);
+            $html[] = sprintf('<h%d>%s</h%d>', $level, render_inline_markdown($matches[2]), $level);
+            continue;
+        }
+
+        if (preg_match('/^\d+\.\s+(.+)$/', $line, $matches)) {
+            $flushParagraph();
+            if ($listType !== 'ol') {
+                $closeList();
+                $html[] = '<ol>';
+                $listType = 'ol';
+            }
+            $html[] = '<li>' . render_inline_markdown($matches[1]) . '</li>';
+            continue;
+        }
+
+        if (preg_match('/^-\s+(.+)$/', $line, $matches)) {
+            $flushParagraph();
+            if ($listType !== 'ul') {
+                $closeList();
+                $html[] = '<ul>';
+                $listType = 'ul';
+            }
+            $html[] = '<li>' . render_inline_markdown($matches[1]) . '</li>';
+            continue;
+        }
+
+        $paragraph[] = trim($line);
+    }
+
+    if ($inCodeBlock) {
+        $html[] = '<pre><code>' . htmlspecialchars(implode("\n", $codeLines), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . '</code></pre>';
+    }
+    $flushParagraph();
+    $closeList();
+
+    return implode("\n", $html);
+}
+
+$instructionsHtml = render_markdown($instructions);
 ?>
 <!doctype html>
 <html lang="en">
@@ -46,11 +146,8 @@ if ($instructions === false) {
       <div class="page-body">
         <main class="container-xl">
           <div class="card instructions-card">
-            <div class="card-header">
-              <h1 class="card-title">README.md</h1>
-            </div>
             <div class="card-body">
-              <pre class="instructions-content"><?= htmlspecialchars($instructions, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></pre>
+              <article class="instructions-content"><?= $instructionsHtml ?></article>
             </div>
           </div>
         </main>

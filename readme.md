@@ -85,7 +85,5 @@ Then use **Download # MP3s** or **Download # ZIP**.
 - Tags must match an existing online MP3 filename.
 - Do not include `.mp3` inside a tag.
 - Spaces around tags are optional.
-- The selected merge gap is inserted between every generated or existing audio
-  part.
-- The ElevenLabs API key remains on the server and is never exposed in the
-  browser.
+- The selected merge gap is inserted between every generated or existing audio part.
+- The ElevenLabs API key remains on the server and is never exposed in the browser.

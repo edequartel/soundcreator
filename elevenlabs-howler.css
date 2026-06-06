@@ -58,12 +58,60 @@
 }
 
 .instructions-content {
-  margin: 0;
-  overflow-wrap: anywhere;
-  color: var(--tblr-body-color);
-  font-family: var(--tblr-font-sans-serif);
+  color: var(--tblr-body-color, #182433);
   font-size: 1rem;
   line-height: 1.65;
+}
+
+.instructions-content h1 {
+  margin: 0 0 1rem;
+  color: var(--tblr-primary, #066fd1);
+  font-size: 2rem;
+}
+
+.instructions-content h2 {
+  margin: 2rem 0 0.75rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid var(--tblr-border-color, #dce1e7);
+  color: var(--tblr-body-color, #182433);
+  font-size: 1.35rem;
+}
+
+.instructions-content p,
+.instructions-content li {
+  color: var(--tblr-secondary-color, #626976);
+}
+
+.instructions-content ol,
+.instructions-content ul {
+  padding-left: 1.5rem;
+}
+
+.instructions-content li + li {
+  margin-top: 0.35rem;
+}
+
+.instructions-content code {
+  color: var(--tblr-primary, #066fd1);
+  background: var(--tblr-primary-lt, #e9f3ff);
+  border-radius: 0.25rem;
+  padding: 0.1rem 0.3rem;
+}
+
+.instructions-content pre {
+  margin: 0.75rem 0 1.25rem;
+  padding: 1rem;
+  overflow-x: auto;
+  color: #f8fafc;
+  background: #182433;
+  border-radius: var(--tblr-border-radius, 0.375rem);
+}
+
+.instructions-content pre code {
+  padding: 0;
+  color: inherit;
+  background: transparent;
+  font-size: 0.9rem;
   white-space: pre-wrap;
 }
 
