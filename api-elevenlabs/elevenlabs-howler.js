@@ -1,5 +1,5 @@
 // file: elevenlabs-howler.js
-/* global Howl, JSZip */
+/* global Howl, JSZip, createFFmpegCore */
 
 (() => {
   const $ = (id) => document.getElementById(id);
@@ -70,8 +70,10 @@
   const GENERAL_BASE_PATH = "/sounds/general/";
   const DOWNLOAD_MERGED_API_URL = "https://www.tastenbraille.com/api/download_merged.php";
   const LOCAL_ELEVENLABS_API_URL = "./elevenlabs_tts.php";
+  const LOCAL_FFMPEG_WASM_URL = "../ffmpeg/ffmpeg-core.wasm";
   const requiresAuth = !!(els.authSection || els.protectedContent);
   let publicMergedObjectUrl = null;
+  let localFfmpegPromise = null;
   const STORAGE = Object.freeze({
     rememberVoice: "elevenlabs.remember.voiceId",
     rememberModel: "elevenlabs.remember.modelId",
@@ -714,6 +716,113 @@
     return res.blob();
   }
 
+  async function fetchGeneralTokenMp3Blob(token) {
+    const normalized = String(token || "").replace(/\.mp3$/i, "").trim();
+    if (!normalized) throw new Error("General token is empty.");
+    const relPath = `${GENERAL_BASE_PATH}${normalized}.mp3`;
+    const res = await fetch(buildAudioUrl(relPath), { cache: "no-store" });
+    if (!res.ok) {
+      const body = await res.text().catch(() => "");
+      throw new Error(`General token fetch failed (${res.status}) for ${relPath}. ${body}`.trim());
+    }
+    return res.blob();
+  }
+
+  async function getLocalFfmpeg() {
+    if (localFfmpegPromise) return localFfmpegPromise;
+    if (typeof createFFmpegCore !== "function") {
+      throw new Error("Local ffmpeg-core is not loaded.");
+    }
+
+    log("Loading local ffmpeg...");
+    localFfmpegPromise = createFFmpegCore({
+      locateFile: (path) => path.endsWith(".wasm") ? LOCAL_FFMPEG_WASM_URL : path,
+      logger: ({ type, message }) => {
+        if (type === "stderr" && /error|invalid|failed/i.test(message)) log(`ffmpeg: ${message}`);
+      },
+    }).then((ffmpeg) => {
+      log("Local ffmpeg loaded.");
+      return ffmpeg;
+    }).catch((error) => {
+      localFfmpegPromise = null;
+      throw error;
+    });
+    return localFfmpegPromise;
+  }
+
+  function unlinkFfmpegFile(ffmpeg, filename) {
+    try { ffmpeg.FS.unlink(filename); } catch {}
+  }
+
+  async function mergeAudioBlobsLocally(blobs) {
+    if (!blobs.length) throw new Error("No audio parts to merge.");
+    if (blobs.length === 1) return blobs[0];
+
+    const ffmpeg = await getLocalFfmpeg();
+    const runId = `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+    const inputNames = [];
+    const outputName = `merged-${runId}.mp3`;
+
+    try {
+      for (let index = 0; index < blobs.length; index += 1) {
+        const inputName = `part-${runId}-${index}.mp3`;
+        inputNames.push(inputName);
+        ffmpeg.FS.writeFile(inputName, new Uint8Array(await blobs[index].arrayBuffer()));
+      }
+
+      const args = [];
+      for (const inputName of inputNames) args.push("-i", inputName);
+
+      const filters = [];
+      const concatInputs = [];
+      const gapSeconds = getMergeGapMs() / 1000;
+      for (let index = 0; index < inputNames.length; index += 1) {
+        filters.push(`[${index}:a]aresample=44100,aformat=sample_fmts=fltp:channel_layouts=mono[a${index}]`);
+        concatInputs.push(`[a${index}]`);
+        if (gapSeconds > 0 && index < inputNames.length - 1) {
+          filters.push(`aevalsrc=0:d=${gapSeconds}:s=44100,aformat=sample_fmts=fltp:channel_layouts=mono[g${index}]`);
+          concatInputs.push(`[g${index}]`);
+        }
+      }
+      filters.push(`${concatInputs.join("")}concat=n=${concatInputs.length}:v=0:a=1[out]`);
+
+      log(`Merging ${blobs.length} audio parts locally with ffmpeg.`);
+      ffmpeg.reset();
+      const result = ffmpeg.exec(
+        ...args,
+        "-filter_complex", filters.join(";"),
+        "-map", "[out]",
+        "-codec:a", "libmp3lame",
+        "-b:a", "128k",
+        outputName
+      );
+      if (result !== 0) throw new Error(`Local ffmpeg merge failed with exit code ${result}.`);
+
+      const output = ffmpeg.FS.readFile(outputName);
+      return new Blob([output.slice().buffer], { type: "audio/mpeg" });
+    } finally {
+      for (const inputName of inputNames) unlinkFfmpegFile(ffmpeg, inputName);
+      unlinkFfmpegFile(ffmpeg, outputName);
+    }
+  }
+
+  async function buildLocalMixedAudioBlob(segments, { voiceId, modelId, outputFormat }) {
+    const blobs = [];
+    for (const seg of segments) {
+      if (seg.type === "speech") {
+        log(`Using online speech MP3: ${seg.value}`);
+        blobs.push(await fetchSpeechTokenMp3Blob(seg.value));
+      } else if (seg.type === "general") {
+        log(`Using online general MP3: ${seg.value}`);
+        blobs.push(await fetchGeneralTokenMp3Blob(seg.value));
+      } else {
+        log(`Creating ElevenLabs MP3: ${seg.value}`);
+        blobs.push(await synthesizeTextToMp3BlobViaTtsProxy({ voiceId, text: seg.value, modelId, outputFormat }));
+      }
+    }
+    return mergeAudioBlobsLocally(blobs);
+  }
+
   function parseMixedTextSegments(rawInput) {
     const raw = String(rawInput || "").trim();
     if (!raw) throw new Error("Text is empty.");
@@ -915,14 +1024,7 @@
       }
       if (seg.type === "general") {
         log(`Split group uses general token: ${seg.value}`);
-        const normalized = String(seg.value || "").replace(/\.mp3$/i, "").trim();
-        const relPath = `${GENERAL_BASE_PATH}${normalized}.mp3`;
-        const res = await fetch(buildAudioUrl(relPath), { cache: "no-store" });
-        if (!res.ok) {
-          const body = await res.text().catch(() => "");
-          throw new Error(`General token fetch failed (${res.status}) for ${relPath}. ${body}`.trim());
-        }
-        return { kind: "blob", value: await res.blob() };
+        return { kind: "blob", value: await fetchGeneralTokenMp3Blob(seg.value) };
       }
       return {
         kind: "blob",
@@ -1434,9 +1536,6 @@
     }
 
     const segments = parseMixedTextSegments(text);
-    if (segments.some((seg) => seg.type !== "tts")) {
-      throw new Error("Public mode supports plain text-to-speech. Log in to use mixed speech/general tokens.");
-    }
 
     if (publicMergedObjectUrl) {
       try { URL.revokeObjectURL(publicMergedObjectUrl); } catch {}
@@ -1444,7 +1543,7 @@
     }
 
     setStatus("Producing...");
-    const blob = await synthesizeTextToMp3BlobViaTtsProxy({ voiceId, text, modelId, outputFormat });
+    const blob = await buildLocalMixedAudioBlob(segments, { voiceId, modelId, outputFormat });
     setLastAudio(blob, { voiceId, modelId });
     publicMergedObjectUrl = URL.createObjectURL(blob);
     stopMergedPlayback();
