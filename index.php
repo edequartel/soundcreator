@@ -173,14 +173,6 @@ $isAuthenticated = audiocreator_is_authenticated();
                   </div>
                 </div>
 
-                <div class="col-12">
-                  <div class="audio-preferences">
-                    <label class="form-check form-switch">
-                      <input id="chkRememberVoice" class="form-check-input" type="checkbox" checked />
-                      <span class="form-check-label">Remember selected voice</span>
-                    </label>
-                  </div>
-                </div>
               </div>
             </div>
           </div>

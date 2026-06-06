@@ -30,7 +30,6 @@
     modelId: $("modelId"),
     outputFormat: $("outputFormat"),
     mergeGapMs: $("mergeGapMs"),
-    chkRememberVoice: $("chkRememberVoice"),
     chkRememberModel: $("chkRememberModel"),
     btnVoiceInfo: $("btnVoiceInfo"),
     voiceInfoName: $("voiceInfoName"),
@@ -83,7 +82,6 @@
   let publicMergedObjectUrl = null;
   let localFfmpegPromise = null;
   const STORAGE = Object.freeze({
-    rememberVoice: "elevenlabs.remember.voiceId",
     rememberModel: "elevenlabs.remember.modelId",
     voiceId: "elevenlabs.voiceId",
     voiceName: "elevenlabs.voiceName",
@@ -413,18 +411,12 @@
     }
   }
 
-  function isRememberVoiceEnabled() {
-    if (!els.chkRememberVoice) return false;
-    return !!els.chkRememberVoice.checked;
-  }
-
   function isRememberModelEnabled() {
     if (!els.chkRememberModel) return false;
     return !!els.chkRememberModel.checked;
   }
 
   function persistRememberFlags() {
-    if (els.chkRememberVoice) storageSet(STORAGE.rememberVoice, isRememberVoiceEnabled() ? "1" : "0");
     if (els.chkRememberModel) storageSet(STORAGE.rememberModel, isRememberModelEnabled() ? "1" : "0");
   }
 
@@ -432,12 +424,6 @@
     if (!els.voiceId) return;
     const value = (valueRaw ?? els.voiceId.value ?? "").trim();
     const selectedName = (els.voiceId?.selectedOptions?.[0]?.textContent || "").trim();
-
-    if (!isRememberVoiceEnabled()) {
-      storageDel(STORAGE.voiceId);
-      storageDel(STORAGE.voiceName);
-      return;
-    }
 
     if (!value) {
       storageDel(STORAGE.voiceId);
@@ -472,19 +458,13 @@
   }
 
   function loadPrefs() {
-    const rememberVoice = storageGet(STORAGE.rememberVoice);
     const rememberModel = storageGet(STORAGE.rememberModel);
 
-    if (els.chkRememberVoice) {
-      els.chkRememberVoice.checked = rememberVoice == null ? true : rememberVoice === "1";
-    }
     if (els.chkRememberModel) {
       els.chkRememberModel.checked = rememberModel == null ? true : rememberModel === "1";
     }
 
-    if (isRememberVoiceEnabled()) {
-      savedVoiceIdPref = (storageGet(STORAGE.voiceId) || "").trim();
-    }
+    savedVoiceIdPref = (storageGet(STORAGE.voiceId) || "").trim();
 
     if (isRememberModelEnabled()) {
       const savedModelId = storageGet(STORAGE.modelId);
@@ -1696,10 +1676,6 @@
   els.modelId?.addEventListener("change", () => persistModelId());
   els.mergeGapMs?.addEventListener("change", () => persistMergeGapMs());
 
-  els.chkRememberVoice?.addEventListener("change", () => {
-    persistRememberFlags();
-    persistVoiceId();
-  });
   els.chkRememberModel?.addEventListener("change", () => {
     persistRememberFlags();
     persistModelId();
