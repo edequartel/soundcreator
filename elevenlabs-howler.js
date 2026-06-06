@@ -1068,16 +1068,16 @@
     return { kind: "blob", value: await mergeSourcesToBlob(sources, `${stem}.mp3`) };
   }
 
-  function setDownloadSplitFilesButtonBusy(busy, label = "Download # MP3s") {
+  function setDownloadSplitFilesButtonBusy(busy, label = "Produce & download MP3s") {
     if (!els.btnDownloadSplitFiles) return;
     els.btnDownloadSplitFiles.disabled = !!busy;
-    els.btnDownloadSplitFiles.textContent = busy ? label : "Download # MP3s";
+    els.btnDownloadSplitFiles.textContent = busy ? label : "Produce & download MP3s";
   }
 
-  function setDownloadSplitZipButtonBusy(busy, label = "Download # ZIP") {
+  function setDownloadSplitZipButtonBusy(busy, label = "Produce & download ZIP") {
     if (!els.btnDownloadSplitZip) return;
     els.btnDownloadSplitZip.disabled = !!busy;
-    els.btnDownloadSplitZip.textContent = busy ? label : "Download # ZIP";
+    els.btnDownloadSplitZip.textContent = busy ? label : "Produce & download ZIP";
   }
 
   async function buildSplitDownloads({ voiceId, text, modelId, outputFormat }) {
@@ -1123,7 +1123,7 @@
       return;
     }
 
-    setDownloadSplitFilesButtonBusy(true, "Downloading...");
+    setDownloadSplitFilesButtonBusy(true, "Producing MP3s...");
     try {
       setStatus("Preparing split downloads…");
       const { groups, readyDownloads, completed } = await buildSplitDownloads({ voiceId, text, modelId, outputFormat });
@@ -1167,7 +1167,7 @@
       return;
     }
 
-    setDownloadSplitZipButtonBusy(true, "Building ZIP...");
+    setDownloadSplitZipButtonBusy(true, "Producing ZIP...");
     try {
       setStatus("Preparing ZIP…");
       const { groups, readyDownloads, completed } = await buildSplitDownloads({ voiceId, text, modelId, outputFormat });

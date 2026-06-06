@@ -78,7 +78,7 @@ Use `#` to divide the text into separate MP3 downloads:
 Eerste bestand <bal> # Tweede bestand {stuiter}
 ```
 
-Then use **Download # MP3s** or **Download # ZIP**.
+Then use **Produce & download MP3s** or **Produce & download ZIP**.
 
 ## Notes
 

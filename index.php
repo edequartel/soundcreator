@@ -139,11 +139,11 @@ $isAuthenticated = audiocreator_is_authenticated();
                       </button>
                       <button id="btnDownloadSplitFiles" class="btn" type="button">
                         <i class="ti ti-files me-1"></i>
-                        Download # MP3s
+                        Produce &amp; download MP3s
                       </button>
                       <button id="btnDownloadSplitZip" class="btn" type="button">
                         <i class="ti ti-file-zip me-1"></i>
-                        Download # ZIP
+                        Produce &amp; download ZIP
                       </button>
                     </div>
                   </div>
