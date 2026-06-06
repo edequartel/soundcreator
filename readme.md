@@ -1,147 +1,91 @@
-# ElevenLabs TTS Component
+# Audiocreator instructions
 
-This component provides **text-to-speech playback using the ElevenLabs API**.  
-It is designed as a **pure JavaScript component** (no HTML file) and fits the
-BrailleServer / BrailleBridge architecture.
+Audiocreator combines generated ElevenLabs speech with existing online MP3
+files into one downloadable MP3.
 
-The component is responsible for:
-- converting text to speech via ElevenLabs
-- playing audio in the browser
-- remaining UI-agnostic (no buttons or markup)
+## Basic workflow
 
-It does **not**:
-- store API keys
-- manage UI controls
-- send text to a braille display directly
+1. Select a voice.
+2. Set the merge gap. This is the silence between every audio part.
+3. Enter text and optional audio tags.
+4. Click **Produce**.
+5. Use **Play** to check the result.
+6. Use **Download** to save the merged MP3.
 
-—
+## Audio tag syntax
 
-## Folder structure
+Text without tags is converted to speech by ElevenLabs:
 
-/components/elevenlabs/
-  elevenlabs.js
-  elevenlabs.css        (optional)
-  README.md
+```text
+Dit is gewone gesproken tekst.
+```
 
-—
+Use angle brackets for an existing Dutch speech MP3:
 
-## Component contract
+```text
+<bal>
+```
 
-### Import
+The example above loads:
 
-<script src=“../components/elevenlabs/elevenlabs.js”></script>
+```text
+/sounds/nl/speech/bal.mp3
+```
 
-—
+Separate multiple speech MP3 names with commas:
 
-## Initialization
+```text
+<b,a,l>
+```
 
-const tts = new ElevenLabsTTS({
-  apiKeyProvider: () => window.ELEVENLABS_API_KEY,
-  voiceId: “EXAVITQu4vr4xnSDxMaL”,
-  model: “eleven_multilingual_v2”
-});
+Use curly brackets for an existing general sound MP3:
 
-### Required options
+```text
+{stuiter}
+```
 
-Option | Description
-—— | ————
-apiKeyProvider | Function returning the ElevenLabs API key
-voiceId | ElevenLabs voice ID
-model | ElevenLabs TTS model
+The example above loads:
 
-Important:  
-The API key must **never be hard-coded** in the component.
+```text
+/sounds/general/stuiter.mp3
+```
 
-—
+## Complete example
 
-## Public API
+```text
+Dit is het woord bal. <bal> {snor}
+Het woord bal bestaat uit de letters <b,a,l>
+Een bal maakt ook een geluid. Het stuitert {stuiter}
+```
 
-### speak(text)
+When **Produce** is clicked, this example creates and merges:
 
-Generate and play speech for the given text.
+1. ElevenLabs speech: `Dit is het woord bal.`
+2. Speech MP3: `/sounds/nl/speech/bal.mp3`
+3. General MP3: `/sounds/general/snor.mp3`
+4. ElevenLabs speech: `Het woord bal bestaat uit de letters`
+5. Speech MP3: `/sounds/nl/speech/b.mp3`
+6. Speech MP3: `/sounds/nl/speech/a.mp3`
+7. Speech MP3: `/sounds/nl/speech/l.mp3`
+8. ElevenLabs speech: `Een bal maakt ook een geluid. Het stuitert`
+9. General MP3: `/sounds/general/stuiter.mp3`
 
-await tts.speak(“Zoek de juiste letter”);
+## Multiple downloads
 
-- returns a Promise
-- cancels any currently playing speech
+Use `#` to divide the text into separate MP3 downloads:
 
-—
+```text
+Eerste bestand <bal> # Tweede bestand {stuiter}
+```
 
-### stop()
+Then use **Download # MP3s** or **Download # ZIP**.
 
-Stop current audio playback.
+## Notes
 
-tts.stop();
-
-—
-
-### isPlaying()
-
-Check whether audio is currently playing.
-
-if (tts.isPlaying()) {
-  tts.stop();
-}
-
-—
-
-## Integration example (words / activities)
-
-async function playInstruction(text) {
-  await tts.speak(text);
-}
-
-Typical usage scenarios:
-- spoken instructions for activities
-- feedback (“Goed gedaan”, “Probeer opnieuw”)
-- story narration
-- accessibility support
-
-—
-
-## Relation to BrailleBridge
-
-This component is **audio-only**.
-
-If braille output is required, the page or activity controller must explicitly call:
-- brailleBridge.sendText(text)
-- and then optionally call tts.speak(text)
-
-This separation ensures:
-- predictable braille behavior
-- independent audio control
-- easier testing
-
-—
-
-## Design principles
-
-- No DOM dependencies
-- No HTML templates
-- No UI opinions
-- Promise-based API
-- Safe API-key handling
-
-—
-
-## Non-goals
-
-This component intentionally does **not**:
-- expose ElevenLabs REST details
-- cache audio files
-- provide UI buttons or controls
-- manage rate, pitch, or SSML
-
-Those concerns belong in:
-- page controllers
-- activity runtime logic
-
-—
-
-## Status
-
-Stable  
-Used for:
-- activity instructions
-- spoken feedback
-- story narration
+- Tags must match an existing online MP3 filename.
+- Do not include `.mp3` inside a tag.
+- Spaces around tags are optional.
+- The selected merge gap is inserted between every generated or existing audio
+  part.
+- The ElevenLabs API key remains on the server and is never exposed in the
+  browser.

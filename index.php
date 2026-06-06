@@ -64,6 +64,10 @@ $isAuthenticated = audiocreator_is_authenticated();
           audiocreator
         </div>
         <div class="ms-auto d-flex gap-2">
+          <a class="btn" href="./instructions.php">
+            <i class="ti ti-book-2 me-1"></i>
+            Instructions
+          </a>
           <button id="btnGitPull" type="button" class="btn">
             <i class="ti ti-git-pull-request me-1"></i>
             <span id="btnGitPullLabel">Git Pull</span>
