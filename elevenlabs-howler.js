@@ -33,6 +33,11 @@
     chkRememberVoice: $("chkRememberVoice"),
     chkRememberModel: $("chkRememberModel"),
     btnVoiceInfo: $("btnVoiceInfo"),
+    voiceInfoName: $("voiceInfoName"),
+    voiceInfoLanguage: $("voiceInfoLanguage"),
+    voiceInfoId: $("voiceInfoId"),
+    voiceInfoLink: $("voiceInfoLink"),
+    voiceInfoModal: $("voiceInfoModal"),
     btnPlay: $("btnPlay"),
     btnStop: $("btnStop"),
     btnClearText: $("clearTextBtn"), // <-- added
@@ -62,7 +67,7 @@
   let sbConfig = null;
   let savedVoiceIdPref = "";
   let preparedMergedSources = [];
-  const voiceLinkById = new Map();
+  const voiceInfoById = new Map();
   const FIXED_OUTPUT_FORMAT = "mp3_44100_128";
   const BRAILLE_AUDIO_BASE_URL = "https://www.tastenbraille.com/braillestudio";
   const MIXED_MERGE_OUTPUT_DIR = "/sounds/nl/out/";
@@ -291,7 +296,7 @@
 
   function setVoiceOptions(rows) {
     if (!els.voiceId) return;
-    voiceLinkById.clear();
+    voiceInfoById.clear();
     els.voiceId.innerHTML = "";
     if (!rows.length) {
       const option = document.createElement("option");
@@ -308,7 +313,13 @@
       const labelLanguage = (row.language || "").trim();
       option.textContent = `${labelName}${labelLanguage ? ` - ${labelLanguage}` : ""}`;
       if (!option.value || !option.textContent) continue;
-       voiceLinkById.set(option.value, (row.voice_link || "").trim());
+      const voiceLink = (row.voice_link || "").trim();
+      voiceInfoById.set(option.value, {
+        name: labelName,
+        language: labelLanguage,
+        voiceId: option.value,
+        link: voiceLink,
+      });
       els.voiceId.appendChild(option);
     }
     refreshVoiceInfoButton();
@@ -326,23 +337,28 @@
     refreshVoiceInfoButton();
   }
 
-  function getSelectedVoiceLink() {
-    const voiceId = (els.voiceId?.value || "").trim();
-    if (!voiceId) return "";
-    return (voiceLinkById.get(voiceId) || "").trim();
-  }
-
   function refreshVoiceInfoButton() {
     if (!els.btnVoiceInfo) return;
-    const link = getSelectedVoiceLink();
-    els.btnVoiceInfo.disabled = !link;
-    els.btnVoiceInfo.title = link || "No info link for selected voice";
+    const voiceId = (els.voiceId?.value || "").trim();
+    const info = voiceInfoById.get(voiceId) || null;
+    els.btnVoiceInfo.disabled = !info;
+    els.btnVoiceInfo.title = info ? `Show information for ${info.name}` : "No voice selected";
   }
 
   function onVoiceInfoClick() {
-    const link = getSelectedVoiceLink();
-    if (!link) return;
-    window.open(link, "_blank", "noreferrer");
+    const voiceId = (els.voiceId?.value || "").trim();
+    const info = voiceInfoById.get(voiceId);
+    if (!info) return;
+    if (els.voiceInfoName) els.voiceInfoName.textContent = info.name || "-";
+    if (els.voiceInfoLanguage) els.voiceInfoLanguage.textContent = info.language || "-";
+    if (els.voiceInfoId) els.voiceInfoId.textContent = info.voiceId || "-";
+    if (els.voiceInfoLink) {
+      els.voiceInfoLink.hidden = !info.link;
+      els.voiceInfoLink.href = info.link || "#";
+    }
+    if (els.voiceInfoModal?.showModal) {
+      els.voiceInfoModal.showModal();
+    }
   }
 
   async function loadVoicesFromSupabase() {

@@ -51,6 +51,22 @@
   --tblr-avatar-size: 2rem;
 }
 
+.voice-info-dialog {
+  width: min(32rem, calc(100% - 2rem));
+  padding: 0;
+  border: 0;
+  border-radius: var(--tblr-card-border-radius);
+  box-shadow: var(--tblr-box-shadow-card);
+}
+
+.voice-info-dialog::backdrop {
+  background: rgb(24 36 51 / 55%);
+}
+
+.voice-info-dialog .modal-content {
+  border: 0;
+}
+
 .instructions-card {
   max-width: 980px;
   margin-left: auto;

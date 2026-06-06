@@ -189,6 +189,34 @@ $isAuthenticated = audiocreator_is_authenticated();
     </div>
   </div>
 
+  <dialog class="voice-info-dialog" id="voiceInfoModal" aria-labelledby="voiceInfoTitle">
+    <div class="modal-content">
+      <form method="dialog">
+        <div class="modal-header">
+          <h2 class="modal-title" id="voiceInfoTitle">Voice information</h2>
+          <button type="submit" class="btn-close" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <dl class="row mb-0">
+            <dt class="col-4">Name</dt>
+            <dd class="col-8" id="voiceInfoName">-</dd>
+            <dt class="col-4">Language</dt>
+            <dd class="col-8" id="voiceInfoLanguage">-</dd>
+            <dt class="col-4">Voice ID</dt>
+            <dd class="col-8"><code id="voiceInfoId">-</code></dd>
+          </dl>
+        </div>
+        <div class="modal-footer">
+          <a id="voiceInfoLink" class="btn" href="#" target="_blank" rel="noreferrer" hidden>
+            <i class="ti ti-external-link me-1"></i>
+            Open ElevenLabs voice
+          </a>
+          <button type="submit" class="btn btn-primary">Close</button>
+        </div>
+      </form>
+    </div>
+  </dialog>
+
 <?php endif; ?>
 
   <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
