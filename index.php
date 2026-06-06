@@ -191,6 +191,7 @@ $isAuthenticated = audiocreator_is_authenticated();
   <script src="https://cdn.jsdelivr.net/npm/howler@2.2.4/dist/howler.min.js"></script>
   <script src="./tabler/core/dist/js/tabler.min.js"></script>
 <?php if ($isAuthenticated): ?>
+  <script src="./ffmpeg/ffmpeg-core.js"></script>
   <script src="./elevenlabs-howler.js"></script>
 <?php endif; ?>
 </body>

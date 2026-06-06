@@ -139,12 +139,10 @@ function elevenlabs_request(string $url, array $headers, string $body): array
         $response = curl_exec($ch);
         if ($response === false) {
             $error = curl_error($ch);
-            curl_close($ch);
             json_response(['error' => 'ElevenLabs request failed.', 'details' => $error], 502);
         }
         $status = (int)curl_getinfo($ch, CURLINFO_RESPONSE_CODE);
         $headerSize = (int)curl_getinfo($ch, CURLINFO_HEADER_SIZE);
-        curl_close($ch);
         return [
             'status' => $status,
             'body' => substr((string)$response, $headerSize),
