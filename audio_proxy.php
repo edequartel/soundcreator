@@ -1,11 +1,10 @@
 <?php
 declare(strict_types=1);
 
+require_once __DIR__ . '/config.php';
 require __DIR__ . '/auth_guard.php';
 
 audiocreator_require_json_auth();
-
-const AUDIO_BASE_URL = 'https://www.tastenbraille.com/braillestudio';
 
 function audio_proxy_error(string $message, int $status): never
 {
@@ -31,7 +30,7 @@ function requested_audio_url(): string
         audio_proxy_error('Audio path is not allowed.', 400);
     }
 
-    return AUDIO_BASE_URL . $normalized;
+    return url_sound(substr($normalized, strlen('/sounds/')));
 }
 
 function fetch_audio(string $url): array
