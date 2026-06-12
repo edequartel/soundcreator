@@ -1021,6 +1021,13 @@
 
   async function buildBlobForMixedGroup(groupText, { voiceId, modelId, outputFormat, stem }) {
     const segments = parseMixedTextSegments(groupText);
+    if (!requiresAuth) {
+      return {
+        kind: "blob",
+        value: await buildLocalMixedAudioBlob(segments, { voiceId, modelId, outputFormat }),
+      };
+    }
+
     if (segments.length === 1) {
       const seg = segments[0];
       if (seg.type === "speech") {
