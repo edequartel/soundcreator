@@ -101,6 +101,12 @@ $isDeveloper = audiocreator_is_developer();
                       <i class="ti ti-info-circle me-1"></i>
                       Informatie
                     </button>
+                    <?php if ($isDeveloper): ?>
+                      <a class="btn" href="./add_voice.php">
+                        <i class="ti ti-plus me-1"></i>
+                        Stem toevoegen
+                      </a>
+                    <?php endif; ?>
                   </div>
                 </div>
 
