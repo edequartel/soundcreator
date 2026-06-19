@@ -151,67 +151,108 @@ try {
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && $error === '') {
-    $values = [
-        'slug' => strtolower(trim((string)($_POST['slug'] ?? ''))),
-        'name' => trim((string)($_POST['name'] ?? '')),
-        'voice_id' => trim((string)($_POST['voice_id'] ?? '')),
-        'language' => trim((string)($_POST['language'] ?? '')),
-        'voice_link' => trim((string)($_POST['voice_link'] ?? '')),
-    ];
-    $makeDefault = isset($_POST['make_default']);
+    $action = (string)($_POST['action'] ?? 'add');
     $csrf = (string)($_POST['csrf'] ?? '');
 
     if (!hash_equals((string)$_SESSION['add_voice_csrf'], $csrf)) {
         $error = 'Het formulier is verlopen. Vernieuw de pagina en probeer opnieuw.';
-    } elseif (!preg_match('/^[a-z0-9][a-z0-9_-]{1,49}$/', $values['slug'])) {
-        $error = 'De sleutel moet 2 tot 50 kleine letters, cijfers, streepjes of liggende streepjes bevatten.';
-    } elseif ($values['name'] === '') {
-        $error = 'Naam is verplicht.';
-    } elseif (!preg_match('/^[A-Za-z0-9_-]{10,100}$/', $values['voice_id'])) {
-        $error = 'Het ElevenLabs-stem-ID is ongeldig.';
-    } elseif ($values['language'] === '') {
-        $error = 'Taal is verplicht.';
-    } elseif ($values['voice_link'] !== '' && filter_var($values['voice_link'], FILTER_VALIDATE_URL) === false) {
-        $error = 'De ElevenLabs-link is ongeldig.';
-    } elseif (isset($config['voices'][$values['slug']])) {
-        $error = 'Deze sleutel bestaat al.';
-    } else {
-        foreach ($config['voices'] as $voice) {
-            if (is_array($voice) && hash_equals((string)($voice['voice_id'] ?? ''), $values['voice_id'])) {
-                $error = 'Dit stem-ID bestaat al.';
-                break;
+    } elseif ($action === 'delete') {
+        $deleteSlug = (string)($_POST['slug'] ?? '');
+        if (!array_key_exists($deleteSlug, $config['voices'])) {
+            $error = 'De geselecteerde stem bestaat niet meer.';
+        } else {
+            $deletedVoice = $config['voices'][$deleteSlug];
+            $deletedVoiceId = is_array($deletedVoice)
+                ? (string)($deletedVoice['voice_id'] ?? '')
+                : '';
+            $deletedVoiceName = is_array($deletedVoice)
+                ? trim((string)($deletedVoice['name'] ?? $deleteSlug))
+                : $deleteSlug;
+
+            unset($config['voices'][$deleteSlug]);
+
+            if (
+                $deletedVoiceId !== ''
+                && hash_equals((string)($config['default_voice_id'] ?? ''), $deletedVoiceId)
+            ) {
+                $firstRemainingVoice = reset($config['voices']);
+                $config['default_voice_id'] = is_array($firstRemainingVoice)
+                    ? (string)($firstRemainingVoice['voice_id'] ?? '')
+                    : '';
+            }
+
+            try {
+                add_voice_save_config($config);
+                $success = 'De stem ' . $deletedVoiceName . ' is verwijderd.';
+                $config = add_voice_load_config();
+            } catch (Throwable $exception) {
+                $error = $exception->getMessage();
             }
         }
+    } elseif ($action !== 'add') {
+        $error = 'Onbekende actie.';
     }
 
-    if ($error === '') {
-        $voice = [
-            'name' => $values['name'],
-            'voice_id' => $values['voice_id'],
-            'language' => $values['language'],
+    if ($action === 'add' && $error === '') {
+        $values = [
+            'slug' => strtolower(trim((string)($_POST['slug'] ?? ''))),
+            'name' => trim((string)($_POST['name'] ?? '')),
+            'voice_id' => trim((string)($_POST['voice_id'] ?? '')),
+            'language' => trim((string)($_POST['language'] ?? '')),
+            'voice_link' => trim((string)($_POST['voice_link'] ?? '')),
         ];
-        if ($values['voice_link'] !== '') {
-            $voice['voice_link'] = $values['voice_link'];
+        $makeDefault = isset($_POST['make_default']);
+
+        if (!preg_match('/^[a-z0-9][a-z0-9_-]{1,49}$/', $values['slug'])) {
+            $error = 'De sleutel moet 2 tot 50 kleine letters, cijfers, streepjes of liggende streepjes bevatten.';
+        } elseif ($values['name'] === '') {
+            $error = 'Naam is verplicht.';
+        } elseif (!preg_match('/^[A-Za-z0-9_-]{10,100}$/', $values['voice_id'])) {
+            $error = 'Het ElevenLabs-stem-ID is ongeldig.';
+        } elseif ($values['language'] === '') {
+            $error = 'Taal is verplicht.';
+        } elseif ($values['voice_link'] !== '' && filter_var($values['voice_link'], FILTER_VALIDATE_URL) === false) {
+            $error = 'De ElevenLabs-link is ongeldig.';
+        } elseif (isset($config['voices'][$values['slug']])) {
+            $error = 'Deze sleutel bestaat al.';
+        } else {
+            foreach ($config['voices'] as $voice) {
+                if (is_array($voice) && hash_equals((string)($voice['voice_id'] ?? ''), $values['voice_id'])) {
+                    $error = 'Dit stem-ID bestaat al.';
+                    break;
+                }
+            }
         }
 
-        $config['voices'][$values['slug']] = $voice;
-        if ($makeDefault) {
-            $config['default_voice_id'] = $values['voice_id'];
-        }
-
-        try {
-            add_voice_save_config($config);
-            $success = 'De stem is toegevoegd aan de ElevenLabs-configuratie.';
-            $values = [
-                'slug' => '',
-                'name' => '',
-                'voice_id' => '',
-                'language' => 'Nederlands',
-                'voice_link' => '',
+        if ($error === '') {
+            $voice = [
+                'name' => $values['name'],
+                'voice_id' => $values['voice_id'],
+                'language' => $values['language'],
             ];
-            $config = add_voice_load_config();
-        } catch (Throwable $exception) {
-            $error = $exception->getMessage();
+            if ($values['voice_link'] !== '') {
+                $voice['voice_link'] = $values['voice_link'];
+            }
+
+            $config['voices'][$values['slug']] = $voice;
+            if ($makeDefault) {
+                $config['default_voice_id'] = $values['voice_id'];
+            }
+
+            try {
+                add_voice_save_config($config);
+                $success = 'De stem is toegevoegd aan de ElevenLabs-configuratie.';
+                $values = [
+                    'slug' => '',
+                    'name' => '',
+                    'voice_id' => '',
+                    'language' => 'Nederlands',
+                    'voice_link' => '',
+                ];
+                $config = add_voice_load_config();
+            } catch (Throwable $exception) {
+                $error = $exception->getMessage();
+            }
         }
     }
 }
@@ -253,6 +294,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $error === '') {
               <h1 class="card-title">Nieuwe ElevenLabs-stem</h1>
             </div>
             <form method="post" autocomplete="off">
+              <input type="hidden" name="action" value="add" />
               <input type="hidden" name="csrf" value="<?= add_voice_escape((string)$_SESSION['add_voice_csrf']) ?>" />
               <div class="card-body">
                 <?php if ($error !== ''): ?>
@@ -313,6 +355,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $error === '') {
                     <th>Naam</th>
                     <th>Taal</th>
                     <th>Stem-ID</th>
+                    <th class="w-1"></th>
                   </tr>
                 </thead>
                 <tbody>
@@ -323,6 +366,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $error === '') {
                         <td><?= add_voice_escape((string)($voice['name'] ?? '')) ?></td>
                         <td><?= add_voice_escape((string)($voice['language'] ?? '')) ?></td>
                         <td><code><?= add_voice_escape((string)($voice['voice_id'] ?? '')) ?></code></td>
+                        <td>
+                          <form method="post" onsubmit="return confirm('Weet u zeker dat u deze stem wilt verwijderen?');">
+                            <input type="hidden" name="action" value="delete" />
+                            <input type="hidden" name="csrf" value="<?= add_voice_escape((string)$_SESSION['add_voice_csrf']) ?>" />
+                            <input type="hidden" name="slug" value="<?= add_voice_escape((string)$slug) ?>" />
+                            <button class="btn btn-sm btn-outline-danger" type="submit">
+                              <i class="ti ti-trash me-1"></i>
+                              Verwijderen
+                            </button>
+                          </form>
+                        </td>
                       </tr>
                     <?php endif; ?>
                   <?php endforeach; ?>
