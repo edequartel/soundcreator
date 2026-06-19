@@ -191,15 +191,15 @@ $isDeveloper = audiocreator_is_developer();
       <footer class="footer d-print-none">
         <div class="container-xl">
           <div class="bartimeus-footer">
-            <a href="https://www.bartimeus.nl/" target="_blank" rel="noopener noreferrer">
+            <a class="bartimeus-footer-text" href="https://www.bartimeus.nl/" target="_blank" rel="noopener noreferrer">
+              Bartimeus Tekst Naar Spraak
+            </a>
+            <a class="bartimeus-footer-logo" href="https://www.bartimeus.nl/" target="_blank" rel="noopener noreferrer">
               <img
                 class="bartimeus-footer-image"
                 src="https://www.tastenbraille.com/braillestudio-data/assets/bartimeus.png"
-                alt="Bartimeus Tekst Naar Spraak"
+                alt="Bartimeus"
               />
-            </a>
-            <a href="https://www.bartimeus.nl/" target="_blank" rel="noopener noreferrer">
-              Bartimeus Tekst Naar Spraak
             </a>
           </div>
         </div>

@@ -46,15 +46,25 @@
 
 .bartimeus-footer {
   display: flex;
-  align-items: flex-end;
-  flex-direction: column;
-  gap: 0.5rem;
-  text-align: right;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.bartimeus-footer-text {
+  color: var(--tblr-secondary-color);
+  font-size: 0.875rem;
+}
+
+.bartimeus-footer-logo {
+  flex: 0 0 auto;
 }
 
 .bartimeus-footer-image {
   display: block;
-  max-width: min(100%, 16rem);
+  width: auto;
+  max-width: 8rem;
+  max-height: 2.5rem;
   height: auto;
 }
 
@@ -139,6 +149,11 @@
 }
 
 @media (max-width: 767.98px) {
+  .bartimeus-footer {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
   .audio-toolbar {
     align-items: stretch;
     flex-direction: column;
