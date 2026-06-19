@@ -129,9 +129,11 @@ $isDeveloper = audiocreator_is_developer();
                       <i class="ti ti-eraser me-1"></i>
                       Tekst wissen
                     </button>
-                    <button id="btnToggleLog" class="btn btn-icon" type="button" aria-label="Logboek tonen" aria-controls="logPanel" aria-expanded="false">
-                      <i class="ti ti-terminal-2"></i>
-                    </button>
+                    <?php if ($isDeveloper): ?>
+                      <button id="btnToggleLog" class="btn btn-icon" type="button" aria-label="Logboek tonen" aria-controls="logPanel" aria-expanded="false">
+                        <i class="ti ti-terminal-2"></i>
+                      </button>
+                    <?php endif; ?>
 
                     <div class="btn-list audio-actions">
                       <button id="btnProduceMergedJwt" class="btn btn-primary" type="button">
@@ -146,41 +148,45 @@ $isDeveloper = audiocreator_is_developer();
                         <i class="ti ti-download me-1"></i>
                         Downloaden
                       </button>
-                      <button id="btnDownloadSplitFiles" class="btn" type="button">
-                        <i class="ti ti-files me-1"></i>
-                        MP3-bestanden maken en downloaden
-                      </button>
-                      <button id="btnDownloadSplitZip" class="btn" type="button">
-                        <i class="ti ti-file-zip me-1"></i>
-                        ZIP-bestand maken en downloaden
-                      </button>
+                      <?php if ($isDeveloper): ?>
+                        <button id="btnDownloadSplitFiles" class="btn" type="button">
+                          <i class="ti ti-files me-1"></i>
+                          MP3-bestanden maken en downloaden
+                        </button>
+                        <button id="btnDownloadSplitZip" class="btn" type="button">
+                          <i class="ti ti-file-zip me-1"></i>
+                          ZIP-bestand maken en downloaden
+                        </button>
+                      <?php endif; ?>
                     </div>
                   </div>
                 </div>
 
-                <div id="logPanel" class="col-12" hidden>
-                  <div class="card bg-dark-lt">
-                    <div class="card-header py-2">
-                      <h3 class="card-title">
-                        <i class="ti ti-terminal-2 me-2"></i>
-                        Logboek
-                      </h3>
-                      <div class="card-actions">
-                        <button id="btnCopyLog" class="btn btn-sm" type="button">
-                          <i class="ti ti-copy me-1"></i>
-                          <span id="btnCopyLogLabel">Kopiëren</span>
-                        </button>
-                        <button id="btnClearLog" class="btn btn-sm" type="button">
-                          <i class="ti ti-trash me-1"></i>
-                          Wissen
-                        </button>
+                <?php if ($isDeveloper): ?>
+                  <div id="logPanel" class="col-12" hidden>
+                    <div class="card bg-dark-lt">
+                      <div class="card-header py-2">
+                        <h3 class="card-title">
+                          <i class="ti ti-terminal-2 me-2"></i>
+                          Logboek
+                        </h3>
+                        <div class="card-actions">
+                          <button id="btnCopyLog" class="btn btn-sm" type="button">
+                            <i class="ti ti-copy me-1"></i>
+                            <span id="btnCopyLogLabel">Kopiëren</span>
+                          </button>
+                          <button id="btnClearLog" class="btn btn-sm" type="button">
+                            <i class="ti ti-trash me-1"></i>
+                            Wissen
+                          </button>
+                        </div>
+                      </div>
+                      <div class="card-body p-0">
+                        <pre id="log" class="audio-log" aria-live="polite"></pre>
                       </div>
                     </div>
-                    <div class="card-body p-0">
-                      <pre id="log" class="audio-log" aria-live="polite"></pre>
-                    </div>
                   </div>
-                </div>
+                <?php endif; ?>
 
               </div>
             </div>
