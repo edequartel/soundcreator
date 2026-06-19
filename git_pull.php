@@ -15,7 +15,7 @@ function json_response(array $payload, int $status = 200): never
 }
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    json_response(['ok' => false, 'error' => 'Use POST for git pull.'], 405);
+    json_response(['ok' => false, 'error' => 'Gebruik POST om via Git bij te werken.'], 405);
 }
 
 $projectDir = __DIR__;
@@ -23,8 +23,8 @@ $gitDir = $projectDir . DIRECTORY_SEPARATOR . '.git';
 if (!is_dir($gitDir)) {
     json_response([
         'ok' => false,
-        'error' => 'This folder is not a Git checkout yet.',
-        'output' => 'Run git init, add a remote, and push/pull this folder before using the Git Pull button.',
+        'error' => 'Deze map is nog geen Git-werkkopie.',
+        'output' => 'Voer git init uit, voeg een externe opslagplaats toe en push of pull deze map voordat u de knop Bijwerken gebruikt.',
     ], 409);
 }
 
@@ -36,7 +36,7 @@ $descriptorSpec = [
 ];
 $process = proc_open($command, $descriptorSpec, $pipes);
 if (!is_resource($process)) {
-    json_response(['ok' => false, 'error' => 'Could not start git pull.'], 500);
+    json_response(['ok' => false, 'error' => 'Bijwerken via Git kon niet worden gestart.'], 500);
 }
 
 fclose($pipes[0]);
@@ -51,5 +51,5 @@ json_response([
     'ok' => $exitCode === 0,
     'exit_code' => $exitCode,
     'output' => $output,
-    'error' => $exitCode === 0 ? null : 'git pull failed.',
+    'error' => $exitCode === 0 ? null : 'Bijwerken via Git is mislukt.',
 ], $exitCode === 0 ? 200 : 500);

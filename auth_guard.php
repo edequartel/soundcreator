@@ -49,6 +49,6 @@ function audiocreator_require_json_auth(): void
     http_response_code(401);
     header('Content-Type: application/json; charset=utf-8');
     header('Cache-Control: no-store');
-    echo json_encode(['ok' => false, 'error' => 'Authentication required.'], JSON_UNESCAPED_SLASHES);
+    echo json_encode(['ok' => false, 'error' => 'Aanmelding vereist.'], JSON_UNESCAPED_SLASHES);
     exit;
 }

@@ -53,14 +53,14 @@ function resolve_config_path(): string
         }
     }
 
-    json_response(['error' => 'ElevenLabs config is not readable from the private server path.'], 500);
+    json_response(['error' => 'De ElevenLabs-configuratie kan niet worden gelezen vanaf het afgeschermde serverpad.'], 500);
 }
 
 function load_config(): array
 {
     $config = require resolve_config_path();
     if (!is_array($config)) {
-        json_response(['error' => 'ElevenLabs config must return an array.'], 500);
+        json_response(['error' => 'De ElevenLabs-configuratie moet een lijst teruggeven.'], 500);
     }
 
     return $config;
@@ -70,7 +70,7 @@ function require_api_key(array $config): string
 {
     $apiKey = trim((string)($config['api_key'] ?? ''));
     if ($apiKey === '' || $apiKey === '?') {
-        json_response(['error' => 'ElevenLabs API key is missing in the private config.'], 500);
+        json_response(['error' => 'De ElevenLabs-API-sleutel ontbreekt in de afgeschermde configuratie.'], 500);
     }
 
     return $apiKey;
@@ -111,7 +111,7 @@ function assert_allowed_voice(string $voiceId, array $config): void
         return;
     }
 
-    json_response(['error' => 'Voice is not allowed by the private config.'], 400);
+    json_response(['error' => 'Deze stem is niet toegestaan volgens de afgeschermde configuratie.'], 400);
 }
 
 function request_json(): array
@@ -119,7 +119,7 @@ function request_json(): array
     $raw = file_get_contents('php://input');
     $data = json_decode($raw !== false ? $raw : '', true);
     if (!is_array($data)) {
-        json_response(['error' => 'Expected JSON body.'], 400);
+        json_response(['error' => 'Er werd JSON-inhoud verwacht.'], 400);
     }
     return $data;
 }
@@ -139,7 +139,7 @@ function elevenlabs_request(string $url, array $headers, string $body): array
         $response = curl_exec($ch);
         if ($response === false) {
             $error = curl_error($ch);
-            json_response(['error' => 'ElevenLabs request failed.', 'details' => $error], 502);
+            json_response(['error' => 'Het verzoek aan ElevenLabs is mislukt.', 'details' => $error], 502);
         }
         $status = (int)curl_getinfo($ch, CURLINFO_RESPONSE_CODE);
         $headerSize = (int)curl_getinfo($ch, CURLINFO_HEADER_SIZE);
@@ -182,7 +182,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET' && ($_GET['action'] ?? '') === 'voices'
 }
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    json_response(['error' => 'Use POST for text-to-speech.'], 405);
+    json_response(['error' => 'Gebruik POST voor tekst-naar-spraak.'], 405);
 }
 
 $apiKey = require_api_key($config);
@@ -193,14 +193,14 @@ $modelId = trim((string)($payload['modelId'] ?? $payload['model_id'] ?? 'eleven_
 $outputFormat = trim((string)($payload['outputFormat'] ?? $payload['output_format'] ?? 'mp3_44100_128'));
 
 if ($text === '') {
-    json_response(['error' => 'Text is required.'], 400);
+    json_response(['error' => 'Tekst is verplicht.'], 400);
 }
 $textLength = function_exists('mb_strlen') ? mb_strlen($text, 'UTF-8') : strlen($text);
 if ($textLength > 5000) {
-    json_response(['error' => 'Text is too long. Maximum is 5000 characters.'], 400);
+    json_response(['error' => 'De tekst is te lang. Het maximum is 5000 tekens.'], 400);
 }
 if ($voiceId === '') {
-    json_response(['error' => 'Voice ID is required.'], 400);
+    json_response(['error' => 'Een stem-ID is verplicht.'], 400);
 }
 
 assert_allowed_voice($voiceId, $config);
@@ -220,7 +220,7 @@ $url = sprintf(
 );
 $body = json_encode($elevenlabsPayload, JSON_UNESCAPED_SLASHES);
 if ($body === false) {
-    json_response(['error' => 'Could not encode ElevenLabs payload.'], 500);
+    json_response(['error' => 'De gegevens voor ElevenLabs konden niet worden gecodeerd.'], 500);
 }
 
 $response = elevenlabs_request($url, [
@@ -231,7 +231,7 @@ $response = elevenlabs_request($url, [
 
 if ($response['status'] < 200 || $response['status'] >= 300) {
     json_response([
-        'error' => 'ElevenLabs API request failed.',
+        'error' => 'Het verzoek aan de ElevenLabs-API is mislukt.',
         'status' => $response['status'],
         'details' => trim((string)$response['body']),
     ], 502);

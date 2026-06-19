@@ -129,20 +129,20 @@
           const res = await fetch(url);
           if (!res.ok) {
             const body = await res.text().catch(() => "");
-            throw new Error(`Failed to load supabase-config from ${url} (${res.status}). ${body}`.trim());
+            throw new Error(`Supabase-configuratie laden vanaf ${url} mislukt (${res.status}). ${body}`.trim());
           }
           const json = await res.json();
           if (json?.url && json?.anonKey) {
             cfg = json;
             break;
           }
-          throw new Error(`Supabase config missing url/anonKey from ${url}.`);
+          throw new Error(`URL of openbare sleutel ontbreekt in de Supabase-configuratie van ${url}.`);
         } catch (e) {
           lastError = e;
         }
       }
       if (!cfg?.url || !cfg?.anonKey) {
-        throw lastError || new Error("Supabase config missing url/anonKey.");
+        throw lastError || new Error("URL of openbare sleutel ontbreekt in de Supabase-configuratie.");
       }
     }
     sbConfig = cfg;
@@ -161,10 +161,10 @@
     setAuthUiVisible(false);
     if (hasCreditsUi()) {
       setCreditsFields();
-      setCreditsSummary("Login vereist", "Log eerst in om ElevenLabs-credits en audiofuncties te gebruiken.");
+      setCreditsSummary("Aanmelden vereist", "Meld u eerst aan om ElevenLabs-credits en audiofuncties te gebruiken.");
     }
     if (els.voiceId) {
-      els.voiceId.innerHTML = "<option value=\"\">Log eerst in</option>";
+      els.voiceId.innerHTML = "<option value=\"\">Meld u eerst aan</option>";
     }
   }
 
@@ -204,10 +204,10 @@
       if (error) throw error;
       msg(els.authMsg, "Ingelogd.");
       await refreshAuthUI(data?.session ?? null);
-      log(`Signed in as ${data?.session?.user?.email || email}.`);
+      log(`Ingelogd als ${data?.session?.user?.email || email}.`);
     } catch (e) {
       msg(els.authMsg, e?.message || String(e), false);
-      log(`Sign-in failed: ${e?.message || e}`);
+      log(`Inloggen mislukt: ${e?.message || e}`);
     }
   }
 
@@ -217,10 +217,10 @@
       msg(els.authMsg, "");
       await sb.auth.signOut();
       setSignedOutState();
-      log("Signed out.");
+      log("Uitgelogd.");
     } catch (e) {
       msg(els.authMsg, e?.message || String(e), false);
-      log(`Sign-out failed: ${e?.message || e}`);
+      log(`Uitloggen mislukt: ${e?.message || e}`);
     }
   }
 
@@ -243,7 +243,7 @@
 
   function getSupabaseFunctionUrl(functionName) {
     const baseUrl = (sbConfig?.url || "").trim();
-    if (!baseUrl) throw new Error("Supabase config URL missing.");
+    if (!baseUrl) throw new Error("De URL in de Supabase-configuratie ontbreekt.");
     return `${baseUrl}/functions/v1/${functionName}`;
   }
 
@@ -264,7 +264,7 @@
     }
 
     const token = (session?.access_token || "").trim();
-    if (!token) throw new Error("No active Supabase session. Sign in first.");
+    if (!token) throw new Error("Er is geen actieve Supabase-sessie. Meld u eerst aan.");
     return token;
   }
 
@@ -299,7 +299,7 @@
     if (!rows.length) {
       const option = document.createElement("option");
       option.value = "";
-      option.textContent = "No voices found";
+      option.textContent = "Geen stemmen gevonden";
       els.voiceId.appendChild(option);
       refreshVoiceInfoButton();
       return;
@@ -340,7 +340,7 @@
     const voiceId = (els.voiceId?.value || "").trim();
     const info = voiceInfoById.get(voiceId) || null;
     els.btnVoiceInfo.disabled = !info;
-    els.btnVoiceInfo.title = info ? `Show information for ${info.name}` : "No voice selected";
+    els.btnVoiceInfo.title = info ? `Informatie tonen over ${info.name}` : "Geen stem geselecteerd";
   }
 
   function onVoiceInfoClick() {
@@ -361,7 +361,7 @@
 
   async function loadVoicesFromSupabase() {
     if (!els.voiceId) return;
-    els.voiceId.innerHTML = "<option value=\"\">Loading voices...</option>";
+    els.voiceId.innerHTML = "<option value=\"\">Stemmen laden...</option>";
     try {
       if (!sb) sb = await initSupabaseClient();
       const { data, error } = await sb
@@ -373,23 +373,23 @@
       setVoiceOptions(rows);
       applySavedVoiceSelection();
       persistVoiceId();
-      log(`Loaded ${rows.length} voices from Supabase.`);
+      log(`${rows.length} stemmen geladen uit Supabase.`);
     } catch (e) {
-      els.voiceId.innerHTML = "<option value=\"\">Could not load voices</option>";
+      els.voiceId.innerHTML = "<option value=\"\">Stemmen konden niet worden geladen</option>";
       refreshVoiceInfoButton();
       const msgParts = [
-        e?.message || String(e || "Unknown error"),
+        e?.message || String(e || "Onbekende fout"),
         e?.code ? `code=${e.code}` : "",
-        e?.hint ? `hint=${e.hint}` : "",
+        e?.hint ? `aanwijzing=${e.hint}` : "",
         e?.details ? `details=${e.details}` : "",
       ].filter(Boolean);
-      log(`ERROR loading voices: ${msgParts.join(" | ")}`);
+      log(`FOUT bij het laden van stemmen: ${msgParts.join(" | ")}`);
     }
   }
 
   async function loadVoicesFromLocalConfig() {
     if (!els.voiceId) return;
-    els.voiceId.innerHTML = "<option value=\"\">Loading voices...</option>";
+    els.voiceId.innerHTML = "<option value=\"\">Stemmen laden...</option>";
     try {
       const res = await fetch(`${LOCAL_ELEVENLABS_API_URL}?action=voices`, {
         headers: { "Accept": "application/json" },
@@ -397,17 +397,17 @@
       });
       const body = await res.json().catch(() => null);
       if (!res.ok) {
-        throw new Error(body?.error || `Local voice config failed (${res.status}).`);
+        throw new Error(body?.error || `Lokale stemconfiguratie mislukt (${res.status}).`);
       }
       const rows = (body?.voices || []).filter((r) => (r?.voice_id || "").trim());
       setVoiceOptions(rows);
       applySavedVoiceSelection();
       persistVoiceId();
-      log(`Loaded ${rows.length} voices from local config.`);
+      log(`${rows.length} stemmen geladen uit de lokale configuratie.`);
     } catch (e) {
-      els.voiceId.innerHTML = "<option value=\"\">Could not load voices</option>";
+      els.voiceId.innerHTML = "<option value=\"\">Stemmen konden niet worden geladen</option>";
       refreshVoiceInfoButton();
-      log(`ERROR loading local voices: ${e?.message || e}`);
+      log(`FOUT bij het laden van lokale stemmen: ${e?.message || e}`);
     }
   }
 
@@ -530,7 +530,7 @@
 
     if (!res.ok) {
       const detail = body?.error || body?.details || bodyText || res.statusText;
-      throw new Error(`elevenlabs-subscription failed (${res.status}). ${String(detail).trim()}`);
+      throw new Error(`Ophalen van het ElevenLabs-abonnement mislukt (${res.status}). ${String(detail).trim()}`);
     }
 
     return body || {};
@@ -540,7 +540,7 @@
     if (!hasCreditsUi()) return;
 
     if (els.btnRefreshCredits) els.btnRefreshCredits.disabled = true;
-    setCreditsSummary("Credits laden...", "Bezig met ophalen via beveiligde server-call.");
+    setCreditsSummary("Credits laden...", "Bezig met ophalen via een beveiligde serveraanroep.");
 
     try {
       const body = await fetchElevenLabsSubscription();
@@ -558,13 +558,13 @@
       });
       setCreditsSummary(
         `${formatNumber(remaining)} credits beschikbaar`,
-        resetAt ? `Reset op ${resetAt}.` : "Actuele stand opgehaald via beveiligde server-call."
+        resetAt ? `Nieuwe periode op ${resetAt}.` : "Actuele stand opgehaald via een beveiligde serveraanroep."
       );
-      log(`ElevenLabs credits loaded: used=${used}, remaining=${remaining}, limit=${limit}, tier=${tier}.`);
+      log(`ElevenLabs-credits geladen: gebruikt=${used}, resterend=${remaining}, limiet=${limit}, abonnement=${tier}.`);
     } catch (e) {
       setCreditsFields();
       setCreditsSummary("Credits niet beschikbaar", e?.message || String(e));
-      log(`ERROR loading ElevenLabs credits: ${e?.message || e}`);
+      log(`FOUT bij het laden van ElevenLabs-credits: ${e?.message || e}`);
     } finally {
       if (els.btnRefreshCredits) els.btnRefreshCredits.disabled = false;
     }
@@ -687,7 +687,7 @@
 
     if (!res.ok) {
       const errText = await res.text().catch(() => "");
-      throw new Error(`TTS proxy failed (${res.status}). ${errText}`.trim());
+      throw new Error(`TTS-proxy mislukt (${res.status}). ${errText}`.trim());
     }
 
     return res.blob();
@@ -695,12 +695,12 @@
 
   async function fetchSpeechTokenMp3Blob(token) {
     const normalized = String(token || "").replace(/\.mp3$/i, "").trim();
-    if (!normalized) throw new Error("Speech token is empty.");
+    if (!normalized) throw new Error("Het spraaklabel is leeg.");
     const relPath = `${SPEECH_BASE_PATH}${normalized}.mp3`;
     const res = await fetchOnlineAudioBlobResponse(relPath);
     if (!res.ok) {
       const body = await res.text().catch(() => "");
-      throw new Error(`Speech token fetch failed (${res.status}) for ${relPath}. ${body}`.trim());
+      throw new Error(`Ophalen van spraaklabel mislukt (${res.status}) voor ${relPath}. ${body}`.trim());
     }
     return res.blob();
   }
@@ -714,12 +714,12 @@
 
   async function fetchGeneralTokenMp3Blob(token) {
     const normalized = String(token || "").replace(/\.mp3$/i, "").trim();
-    if (!normalized) throw new Error("General token is empty.");
+    if (!normalized) throw new Error("Het algemene geluidslabel is leeg.");
     const relPath = `${GENERAL_BASE_PATH}${normalized}.mp3`;
     const res = await fetchOnlineAudioBlobResponse(relPath);
     if (!res.ok) {
       const body = await res.text().catch(() => "");
-      throw new Error(`General token fetch failed (${res.status}) for ${relPath}. ${body}`.trim());
+      throw new Error(`Ophalen van algemeen geluidslabel mislukt (${res.status}) voor ${relPath}. ${body}`.trim());
     }
     return res.blob();
   }
@@ -727,17 +727,17 @@
   async function getLocalFfmpeg() {
     if (localFfmpegPromise) return localFfmpegPromise;
     if (typeof createFFmpegCore !== "function") {
-      throw new Error("Local ffmpeg-core is not loaded.");
+      throw new Error("De lokale ffmpeg-kern is niet geladen.");
     }
 
-    log("Loading local ffmpeg...");
+    log("Lokale ffmpeg laden...");
     localFfmpegPromise = createFFmpegCore({
       locateFile: (path) => path.endsWith(".wasm") ? LOCAL_FFMPEG_WASM_URL : path,
       logger: ({ type, message }) => {
         if (type === "stderr" && /error|invalid|failed/i.test(message)) log(`ffmpeg: ${message}`);
       },
     }).then((ffmpeg) => {
-      log("Local ffmpeg loaded.");
+      log("Lokale ffmpeg geladen.");
       return ffmpeg;
     }).catch((error) => {
       localFfmpegPromise = null;
@@ -751,7 +751,7 @@
   }
 
   async function mergeAudioBlobsLocally(blobs) {
-    if (!blobs.length) throw new Error("No audio parts to merge.");
+    if (!blobs.length) throw new Error("Er zijn geen audiofragmenten om samen te voegen.");
     if (blobs.length === 1) return blobs[0];
 
     const ffmpeg = await getLocalFfmpeg();
@@ -782,7 +782,7 @@
       }
       filters.push(`${concatInputs.join("")}concat=n=${concatInputs.length}:v=0:a=1[out]`);
 
-      log(`Merging ${blobs.length} audio parts locally with ffmpeg.`);
+      log(`${blobs.length} audiofragmenten lokaal samenvoegen met ffmpeg.`);
       ffmpeg.reset();
       const result = ffmpeg.exec(
         ...args,
@@ -792,7 +792,7 @@
         "-b:a", "128k",
         outputName
       );
-      if (result !== 0) throw new Error(`Local ffmpeg merge failed with exit code ${result}.`);
+      if (result !== 0) throw new Error(`Lokaal samenvoegen met ffmpeg mislukt met afsluitcode ${result}.`);
 
       const output = ffmpeg.FS.readFile(outputName);
       return new Blob([output.slice().buffer], { type: "audio/mpeg" });
@@ -806,13 +806,13 @@
     const blobs = [];
     for (const seg of segments) {
       if (seg.type === "speech") {
-        log(`Using online speech MP3: ${seg.value}`);
+        log(`Online spraakbestand gebruiken: ${seg.value}`);
         blobs.push(await fetchSpeechTokenMp3Blob(seg.value));
       } else if (seg.type === "general") {
-        log(`Using online general MP3: ${seg.value}`);
+        log(`Online algemeen geluidsbestand gebruiken: ${seg.value}`);
         blobs.push(await fetchGeneralTokenMp3Blob(seg.value));
       } else {
-        log(`Creating ElevenLabs MP3: ${seg.value}`);
+        log(`ElevenLabs-MP3 maken: ${seg.value}`);
         blobs.push(await synthesizeTextToMp3BlobViaTtsProxy({ voiceId, text: seg.value, modelId, outputFormat }));
       }
     }
@@ -821,7 +821,7 @@
 
   function parseMixedTextSegments(rawInput) {
     const raw = String(rawInput || "").trim();
-    if (!raw) throw new Error("Text is empty.");
+    if (!raw) throw new Error("De tekst is leeg.");
 
     const segments = [];
     const re = /<([^>]+)>|\{([^}]+)\}/g;
@@ -846,7 +846,7 @@
     if (textAfter) segments.push({ type: "tts", value: textAfter });
 
     if (!segments.length) {
-      throw new Error("No valid segments found. Use text and optionally <speech-token> or {general-token} tags.");
+      throw new Error("Geen geldige fragmenten gevonden. Gebruik tekst en eventueel <spraaklabel> of {geluidslabel}.");
     }
     return segments;
   }
@@ -865,7 +865,7 @@
       .map((part) => part.replace(/\s+/g, " ").trim())
       .filter(Boolean);
     if (!groups.length) {
-      throw new Error("No # segments found. Separate each download with #.");
+      throw new Error("Geen fragmenten met # gevonden. Scheid iedere download met #.");
     }
     return groups;
   }
@@ -885,7 +885,7 @@
     });
 
     const body = await res.text().catch(() => "");
-    if (!res.ok) throw new Error(`MP3 upload failed (${res.status}). ${body}`.trim());
+    if (!res.ok) throw new Error(`Uploaden van MP3-bestand mislukt (${res.status}). ${body}`.trim());
     try { return JSON.parse(body); } catch { return { ok: true, raw: body }; }
   }
 
@@ -903,7 +903,7 @@
         await navigator.share({
           files: [file],
           title: filename,
-          text: "Audio file",
+          text: "Audiobestand",
         });
         return { method: "share" };
       }
@@ -939,13 +939,13 @@
     }, 0);
   }
 
-  function notifyDownloadFinished(filename, destination = "Downloads folder") {
+  function notifyDownloadFinished(filename, destination = "map Downloads") {
     const fileText = filename ? `\nFile: ${filename}` : "";
     window.alert(`Download finished.${fileText}\nFolder: ${destination}`);
   }
 
   function browserDownloadDestination() {
-    return "Downloads folder (or your browser's configured download folder)";
+    return "map Downloads (of de ingestelde downloadmap van de browser)";
   }
 
   function buildSplitFilename(index, rawText) {
@@ -969,7 +969,7 @@
 
     if (!res.ok) {
       const body = await res.text().catch(() => "");
-      throw new Error(`Audio download proxy failed (${res.status}). ${body}`.trim());
+      throw new Error(`Downloaden via de audioproxy mislukt (${res.status}). ${body}`.trim());
     }
 
     return res.blob();
@@ -996,7 +996,7 @@
     let mergeBody = null;
     try { mergeBody = mergeBodyText ? JSON.parse(mergeBodyText) : null; } catch {}
     if (!mergeRes.ok || mergeBody?.ok === false) {
-      throw new Error(`Mixed merge failed (${mergeRes.status}). ${mergeBodyText}`.trim());
+      throw new Error(`Samenvoegen van gemengde audio mislukt (${mergeRes.status}). ${mergeBodyText}`.trim());
     }
 
     const outputUrlRaw = mergeBody?.outputUrl || mergeBody?.url || `${MIXED_MERGE_OUTPUT_DIR}${outputFilename}`;
@@ -1005,7 +1005,7 @@
     let lastError = null;
     for (let attempt = 1; attempt <= 5; attempt += 1) {
       try {
-        log(`Split merged fetch attempt ${attempt}: ${outputUrl}`);
+        log(`Poging ${attempt} om het gesplitste, samengevoegde bestand op te halen: ${outputUrl}`);
         const proxiedUrl = `${outputUrl}${outputUrl.includes("?") ? "&" : "?"}t=${Date.now()}`;
         return await fetchAudioBlobViaProxy(proxiedUrl);
       } catch (e) {
@@ -1016,7 +1016,7 @@
       }
     }
 
-    throw lastError || new Error("Merged audio fetch failed.");
+    throw lastError || new Error("Het samengevoegde audiobestand kon niet worden opgehaald.");
   }
 
   async function buildBlobForMixedGroup(groupText, { voiceId, modelId, outputFormat, stem }) {
@@ -1031,11 +1031,11 @@
     if (segments.length === 1) {
       const seg = segments[0];
       if (seg.type === "speech") {
-        log(`Split group uses speech token: ${seg.value}`);
+        log(`Gesplitste groep gebruikt spraaklabel: ${seg.value}`);
         return { kind: "blob", value: await fetchSpeechTokenMp3Blob(seg.value) };
       }
       if (seg.type === "general") {
-        log(`Split group uses general token: ${seg.value}`);
+        log(`Gesplitste groep gebruikt algemeen geluidslabel: ${seg.value}`);
         return { kind: "blob", value: await fetchGeneralTokenMp3Blob(seg.value) };
       }
       return {
@@ -1049,20 +1049,20 @@
     for (const seg of segments) {
       if (seg.type === "speech") {
         const normalized = seg.value.replace(/\.mp3$/i, "");
-        log(`Split merge source [speech]: ${normalized}`);
+        log(`Bron voor gesplitst samenvoegen [spraak]: ${normalized}`);
         sources.push(`${SPEECH_BASE_PATH}${normalized}.mp3`);
         continue;
       }
       if (seg.type === "general") {
         const normalized = seg.value.replace(/\.mp3$/i, "");
-        log(`Split merge source [general]: ${normalized}`);
+        log(`Bron voor gesplitst samenvoegen [algemeen]: ${normalized}`);
         sources.push(`${GENERAL_BASE_PATH}${normalized}.mp3`);
         continue;
       }
-      log(`Split merge source [tts]: ${seg.value}`);
+      log(`Bron voor gesplitst samenvoegen [tekst-naar-spraak]: ${seg.value}`);
       const blob = await synthesizeTextToMp3BlobViaTtsProxy({ voiceId, text: seg.value, modelId, outputFormat });
       const partFilename = `${stem}-part-${String(partNo).padStart(3, "0")}.mp3`;
-      log(`Split upload part -> ${MIXED_MERGE_PARTS_PATH}/${partFilename}`);
+      log(`Gesplitst fragment uploaden -> ${MIXED_MERGE_PARTS_PATH}/${partFilename}`);
       await uploadBlobToStoryEndpoint(blob, {
         path: MIXED_MERGE_PARTS_PATH,
         audiofile: partFilename,
@@ -1071,25 +1071,25 @@
       partNo += 1;
     }
 
-    log(`Split merge call with ${sources.length} sources -> ${stem}.mp3`);
+    log(`Gesplitste samenvoeging met ${sources.length} bronnen -> ${stem}.mp3`);
     return { kind: "blob", value: await mergeSourcesToBlob(sources, `${stem}.mp3`) };
   }
 
-  function setDownloadSplitFilesButtonBusy(busy, label = "Produce & download MP3s") {
+  function setDownloadSplitFilesButtonBusy(busy, label = "MP3-bestanden maken en downloaden") {
     if (!els.btnDownloadSplitFiles) return;
     els.btnDownloadSplitFiles.disabled = !!busy;
-    els.btnDownloadSplitFiles.textContent = busy ? label : "Produce & download MP3s";
+    els.btnDownloadSplitFiles.textContent = busy ? label : "MP3-bestanden maken en downloaden";
   }
 
-  function setDownloadSplitZipButtonBusy(busy, label = "Produce & download ZIP") {
+  function setDownloadSplitZipButtonBusy(busy, label = "ZIP-bestand maken en downloaden") {
     if (!els.btnDownloadSplitZip) return;
     els.btnDownloadSplitZip.disabled = !!busy;
-    els.btnDownloadSplitZip.textContent = busy ? label : "Produce & download ZIP";
+    els.btnDownloadSplitZip.textContent = busy ? label : "ZIP-bestand maken en downloaden";
   }
 
   async function buildSplitDownloads({ voiceId, text, modelId, outputFormat }) {
     const groups = parseHashSeparatedGroups(text);
-    log(`Preparing ${groups.length} split download${groups.length === 1 ? "" : "s"} from # separators.`);
+    log(`${groups.length} gesplitste download${groups.length === 1 ? "" : "s"} voorbereiden op basis van #-scheidingstekens.`);
 
     const readyDownloads = [];
     let completed = 0;
@@ -1103,13 +1103,13 @@
         log(`Split bestand klaar [deel ${index}]: ${filename}`);
         completed += 1;
       } catch (e) {
-        log(`Split download failed [deel ${index}] "${groupText}": ${e?.message || e}`);
+        log(`Gesplitste download mislukt [deel ${index}] "${groupText}": ${e?.message || e}`);
       }
       index += 1;
     }
 
     if (!completed) {
-      throw new Error("No split downloads succeeded.");
+      throw new Error("Geen van de gesplitste downloads is gelukt.");
     }
     return { groups, readyDownloads, completed };
   }
@@ -1125,29 +1125,29 @@
     persistModelId(modelId);
 
     if (!voiceId || !text) {
-      log("Missing required fields for split download: Voice ID and Text are required.");
-      setStatus("Missing input");
+      log("Verplichte velden ontbreken voor de gesplitste download: stem en tekst zijn verplicht.");
+      setStatus("Invoer ontbreekt");
       return;
     }
 
-    setDownloadSplitFilesButtonBusy(true, "Producing MP3s...");
+    setDownloadSplitFilesButtonBusy(true, "MP3-bestanden maken...");
     try {
-      setStatus("Preparing split downloads…");
+      setStatus("Gesplitste downloads voorbereiden…");
       const { groups, readyDownloads, completed } = await buildSplitDownloads({ voiceId, text, modelId, outputFormat });
       for (const item of readyDownloads) {
         downloadBlobViaAnchor(item.blob, item.filename);
-        log(`Download started [deel ${item.index}]: ${item.filename}`);
+        log(`Download gestart [deel ${item.index}]: ${item.filename}`);
         await sleep(750);
       }
-      log(`Split download klaar: ${completed}/${groups.length} bestanden gestart.`);
+      log(`Gesplitste download gereed: ${completed}/${groups.length} bestanden gestart.`);
       notifyDownloadFinished(
-        `${completed}/${groups.length} MP3 files`,
+        `${completed}/${groups.length} MP3-bestanden`,
         browserDownloadDestination()
       );
-      setStatus("Idle");
+      setStatus("Gereed");
     } catch (e) {
-      log(`Split download failed: ${e?.message || e}`);
-      setStatus("Error");
+      log(`Gesplitste download mislukt: ${e?.message || e}`);
+      setStatus("Fout");
     } finally {
       setDownloadSplitFilesButtonBusy(false);
     }
@@ -1164,19 +1164,19 @@
     persistModelId(modelId);
 
     if (!voiceId || !text) {
-      log("Missing required fields for split ZIP: Voice ID and Text are required.");
-      setStatus("Missing input");
+      log("Verplichte velden ontbreken voor het ZIP-bestand: stem en tekst zijn verplicht.");
+      setStatus("Invoer ontbreekt");
       return;
     }
     if (typeof JSZip === "undefined") {
-      log("Split ZIP failed: JSZip not loaded.");
-      setStatus("Error");
+      log("Maken van ZIP-bestand mislukt: JSZip is niet geladen.");
+      setStatus("Fout");
       return;
     }
 
-    setDownloadSplitZipButtonBusy(true, "Producing ZIP...");
+    setDownloadSplitZipButtonBusy(true, "ZIP-bestand maken...");
     try {
-      setStatus("Preparing ZIP…");
+      setStatus("ZIP-bestand voorbereiden…");
       const { groups, readyDownloads, completed } = await buildSplitDownloads({ voiceId, text, modelId, outputFormat });
       const zip = new JSZip();
       for (const item of readyDownloads) {
@@ -1185,12 +1185,12 @@
       const zipBlob = await zip.generateAsync({ type: "blob" });
       const zipFilename = `elevenlabs-split-${String(groups.length).padStart(3, "0")}-files.zip`;
       downloadBlobViaAnchor(zipBlob, zipFilename);
-      log(`ZIP download started: ${zipFilename} (${completed}/${groups.length} bestanden).`);
+      log(`ZIP-download gestart: ${zipFilename} (${completed}/${groups.length} bestanden).`);
       notifyDownloadFinished(zipFilename, browserDownloadDestination());
-      setStatus("Idle");
+      setStatus("Gereed");
     } catch (e) {
-      log(`Split ZIP failed: ${e?.message || e}`);
-      setStatus("Error");
+      log(`Maken van ZIP-bestand mislukt: ${e?.message || e}`);
+      setStatus("Fout");
     } finally {
       setDownloadSplitZipButtonBusy(false);
     }
@@ -1208,8 +1208,8 @@
     clearLastAudio();
 
     if (!voiceId || !text) {
-      log("Missing required fields: Voice ID and Text are required.");
-      setStatus("Missing input");
+      log("Verplichte velden ontbreken: stem en tekst zijn verplicht.");
+      setStatus("Invoer ontbreekt");
       return;
     }
 
@@ -1223,37 +1223,37 @@
     els.btnStop && (els.btnStop.disabled = false);
 
     try {
-      log("Using secured TTS proxy for playback.");
-      setStatus("Downloading…");
+      log("Beveiligde TTS-proxy gebruiken voor afspelen.");
+      setStatus("Downloaden…");
       const blob = await synthesizeTextToMp3BlobViaTtsProxy({ voiceId, text, modelId, outputFormat });
       setLastAudio(blob, { voiceId, modelId });
       const url = URL.createObjectURL(blob);
       currentObjectUrl = url;
       await new Promise((resolve, reject) => {
-        setStatus("Playing…");
+        setStatus("Afspelen…");
         currentHowl = new Howl({
           src: [url],
           html5: true,
           format: ["mp3"],
-          onplay: () => log("Howler: play"),
+          onplay: () => log("Howler: afspelen"),
           onend: () => {
-            log("Howler: end");
-            setStatus("Idle");
+            log("Howler: einde");
+            setStatus("Gereed");
             resolve();
           },
-          onloaderror: (_id, err) => reject(new Error(`Howler load error: ${err}`)),
-          onplayerror: (_id, err) => reject(new Error(`Howler play error: ${err}`)),
+          onloaderror: (_id, err) => reject(new Error(`Howler-laadfout: ${err}`)),
+          onplayerror: (_id, err) => reject(new Error(`Howler-afspeelfout: ${err}`)),
         });
         currentHowl.play();
       });
     } catch (e) {
       const msg = e?.message || String(e);
       if (/aborted/i.test(msg) || (e?.name && String(e.name).toLowerCase().includes("abort"))) {
-        log("Fetch aborted (likely Stop pressed).");
-        setStatus("Idle");
+        log("Ophalen afgebroken, waarschijnlijk doordat op Stoppen is gedrukt.");
+        setStatus("Gereed");
       } else {
-        log(`ERROR: ${msg}`);
-        setStatus("Error");
+        log(`FOUT: ${msg}`);
+        setStatus("Fout");
       }
     } finally {
       els.btnPlay && (els.btnPlay.disabled = false);
@@ -1262,10 +1262,10 @@
   }
 
   function onStop() {
-    log("Stop pressed.");
+    log("Stoppen ingedrukt.");
     cleanupAudio({ abortFetch: true });
     stopMergedPlayback();
-    setStatus("Idle");
+    setStatus("Gereed");
     els.btnPlay && (els.btnPlay.disabled = false);
     els.btnStop && (els.btnStop.disabled = true);
   }
@@ -1274,16 +1274,16 @@
     if (!els.text) return;
     els.text.value = "";
     els.text.focus();
-    log("Text cleared.");
+    log("Tekst gewist.");
   }
 
   function setLogVisible(visible) {
     if (!els.logPanel) return;
     els.logPanel.hidden = !visible;
     els.btnToggleLog?.setAttribute("aria-expanded", visible ? "true" : "false");
-    els.btnToggleLog?.setAttribute("aria-label", visible ? "Hide logging" : "Show logging");
+    els.btnToggleLog?.setAttribute("aria-label", visible ? "Logboek verbergen" : "Logboek tonen");
     if (els.btnToggleLogLabel) {
-      els.btnToggleLogLabel.textContent = visible ? "Hide logging" : "Show logging";
+      els.btnToggleLogLabel.textContent = visible ? "Logboek verbergen" : "Logboek tonen";
     }
   }
 
@@ -1293,7 +1293,7 @@
 
   function onClearLog() {
     if (els.log) els.log.textContent = "";
-    log("Log cleared.");
+    log("Logboek gewist.");
   }
 
   function setCopyLogLabel(text) {
@@ -1308,19 +1308,19 @@
     if (!els.log) return;
     const text = els.log.textContent || "";
     if (!text.trim()) {
-      setCopyLogLabel("Empty");
-      window.setTimeout(() => setCopyLogLabel("Copy"), 1200);
+      setCopyLogLabel("Leeg");
+      window.setTimeout(() => setCopyLogLabel("Kopiëren"), 1200);
       return;
     }
 
     try {
       await navigator.clipboard.writeText(text);
-      setCopyLogLabel("Copied");
+      setCopyLogLabel("Gekopieerd");
     } catch (e) {
-      log(`Copy log failed: ${e?.message || e}`);
-      setCopyLogLabel("Copy failed");
+      log(`Logboek kopiëren mislukt: ${e?.message || e}`);
+      setCopyLogLabel("Kopiëren mislukt");
     } finally {
-      window.setTimeout(() => setCopyLogLabel("Copy"), 1200);
+      window.setTimeout(() => setCopyLogLabel("Kopiëren"), 1200);
     }
   }
 
@@ -1340,8 +1340,8 @@
   async function onGitPull() {
     if (!els.btnGitPull) return;
     els.btnGitPull.disabled = true;
-    setGitPullLabel("Pulling...");
-    logGitPullMessage("Git pull started.");
+    setGitPullLabel("Bijwerken...");
+    logGitPullMessage("Bijwerken via Git gestart.");
     try {
       const res = await fetch("./git_pull.php", {
         method: "POST",
@@ -1350,63 +1350,63 @@
       const body = await res.json().catch(() => null);
       const output = String(body?.output || "").trim();
       if (!res.ok || body?.ok === false) {
-        const error = body?.error || `Git pull failed (${res.status}).`;
+        const error = body?.error || `Bijwerken via Git mislukt (${res.status}).`;
         logGitPullMessage(error, output);
         throw new Error(output ? `${error}\n${output}` : error);
       }
-      logGitPullMessage("Git pull finished successfully.", output || "Already up to date.");
-      setGitPullLabel("Pulled");
+      logGitPullMessage("Bijwerken via Git voltooid.", output || "Alles was al bijgewerkt.");
+      setGitPullLabel("Bijgewerkt");
     } catch (e) {
       const error = e?.message || String(e);
-      logGitPullMessage("Git pull failed.", error);
-      setGitPullLabel("Pull failed");
+      logGitPullMessage("Bijwerken via Git mislukt.", error);
+      setGitPullLabel("Bijwerken mislukt");
     } finally {
       window.setTimeout(() => {
         els.btnGitPull.disabled = false;
-        setGitPullLabel("Git Pull");
+        setGitPullLabel("Bijwerken");
       }, 1400);
     }
   }
 
   async function onDownload() {
     if (!lastAudioBlob) {
-      log("No audio available to download yet.");
+      log("Er is nog geen audio beschikbaar om te downloaden.");
       return;
     }
 
     const filename = lastAudioFilename || "elevenlabs.mp3";
 
     try {
-      setStatus("Preparing download…");
+      setStatus("Download voorbereiden…");
 
       const { method } = await saveAudioBlobToFiles(lastAudioBlob, filename);
 
       if (method === "share") {
-        log(`Opened Share Sheet for: ${filename} (use "Save to Files").`);
-        notifyDownloadFinished(filename, "selected folder in Save to Files");
-        setStatus("Idle");
+        log(`Deelvenster geopend voor: ${filename}. Kies 'Bewaar in Bestanden'.`);
+        notifyDownloadFinished(filename, "geselecteerde map in Bewaar in Bestanden");
+        setStatus("Gereed");
         return;
       }
 
       // Anchor fallback
       if (isProbablyIOS()) {
-        log(`Download link triggered for: ${filename}. If iOS does not save it automatically, use the Share button in the opened audio view to "Save to Files".`);
+        log(`Downloadlink geactiveerd voor: ${filename}. Als iOS het bestand niet automatisch bewaart, gebruik dan de deelknop en kies 'Bewaar in Bestanden'.`);
       } else {
-        log(`Download started: ${filename}`);
+        log(`Download gestart: ${filename}`);
       }
 
       notifyDownloadFinished(filename, browserDownloadDestination());
-      setStatus("Idle");
+      setStatus("Gereed");
     } catch (e) {
-      log(`Download failed: ${e?.message || e}`);
-      setStatus("Error");
+      log(`Download mislukt: ${e?.message || e}`);
+      setStatus("Fout");
     }
   }
 
-  function setProduceMergedJwtButtonBusy(busy, label = "Produce") {
+  function setProduceMergedJwtButtonBusy(busy, label = "Maken") {
     if (!els.btnProduceMergedJwt) return;
     els.btnProduceMergedJwt.disabled = !!busy;
-    els.btnProduceMergedJwt.textContent = busy ? label : "Produce";
+    els.btnProduceMergedJwt.textContent = busy ? label : "Maken";
     updateProducedAudioButtons(!!busy);
     updateSplitDownloadButtons(!!busy);
   }
@@ -1447,7 +1447,7 @@
 
   function setMergedPlayButtonText(isPlaying) {
     if (!els.btnPlayMerged) return;
-    els.btnPlayMerged.textContent = isPlaying ? "Pause" : "Play";
+    els.btnPlayMerged.textContent = isPlaying ? "Pauzeren" : "Afspelen";
   }
 
   function stopMergedPlayback() {
@@ -1480,8 +1480,8 @@
     player.play()
       .then(() => setMergedPlayButtonText(true))
       .catch((e) => {
-        log(`Play merged failed: ${e?.message || e}`);
-        setStatus("Error");
+        log(`Afspelen van samengevoegde audio mislukt: ${e?.message || e}`);
+        setStatus("Fout");
         setMergedPlayButtonText(false);
       });
   }
@@ -1490,19 +1490,19 @@
     try {
       if (publicMergedObjectUrl && lastAudioBlob) {
         downloadBlobViaAnchor(lastAudioBlob, lastAudioFilename || "elevenlabs.mp3");
-        log(`Download started: ${lastAudioFilename || "elevenlabs.mp3"}`);
+        log(`Download gestart: ${lastAudioFilename || "elevenlabs.mp3"}`);
         notifyDownloadFinished(lastAudioFilename || "elevenlabs.mp3", browserDownloadDestination());
         return;
       }
-      setStatus("Downloading merged…");
+      setStatus("Samengevoegde audio downloaden…");
       const url = `${DOWNLOAD_MERGED_API_URL}?t=${Date.now()}`;
       window.location.assign(url);
-      log(`Download requested via API: ${url}`);
+      log(`Download aangevraagd via de API: ${url}`);
       notifyDownloadFinished("merged.mp3", browserDownloadDestination());
-      setStatus("Idle");
+      setStatus("Gereed");
     } catch (e) {
-      log(`Download merged failed: ${e?.message || e}`);
-      setStatus("Error");
+      log(`Downloaden van samengevoegde audio mislukt: ${e?.message || e}`);
+      setStatus("Fout");
     }
   }
 
@@ -1512,14 +1512,14 @@
     const modelId = "eleven_v3";
     const outputFormat = FIXED_OUTPUT_FORMAT;
     if (!voiceId || !text) {
-      log("Missing required fields for JWT parts: Voice, Text.");
-      setStatus("Missing input");
+      log("Verplichte velden ontbreken voor JWT-fragmenten: stem en tekst.");
+      setStatus("Invoer ontbreekt");
       return;
     }
 
     setProduceMergedJwtButtonBusy(true, "JWT-delen...");
     try {
-      setStatus("Preparing JWT parts…");
+      setStatus("JWT-fragmenten voorbereiden…");
       const segments = parseMixedTextSegments(text);
       const sources = [];
       const stem = `merged-${Date.now()}`;
@@ -1546,11 +1546,11 @@
       }
 
       preparedMergedSources = sources;
-      log(`JWT parts ready: ${sources.length} source${sources.length === 1 ? "" : "s"}.`);
-      setStatus("Idle");
+      log(`JWT-fragmenten gereed: ${sources.length} bron${sources.length === 1 ? "" : "nen"}.`);
+      setStatus("Gereed");
     } catch (e) {
-      log(`Maak delen JWT failed: ${e?.message || e}`);
-      setStatus("Error");
+      log(`Maken van JWT-fragmenten mislukt: ${e?.message || e}`);
+      setStatus("Fout");
     } finally {
       setProduceMergedJwtButtonBusy(false);
     }
@@ -1558,14 +1558,14 @@
 
   async function onMergeMergedJwt() {
     if (!preparedMergedSources.length) {
-      log("No prepared sources yet. Click 'Maak delen JWT' first.");
-      setStatus("Missing input");
+      log("Er zijn nog geen voorbereide bronnen. Maak eerst de JWT-fragmenten.");
+      setStatus("Invoer ontbreekt");
       return;
     }
 
-    setProduceMergedJwtButtonBusy(true, "Merging...");
+    setProduceMergedJwtButtonBusy(true, "Samenvoegen...");
     try {
-      setStatus("Merging via JWT…");
+      setStatus("Samenvoegen via JWT…");
       const mergeRes = await fetchWithJwtRetry("merge-proxy", {
         method: "POST",
         headers: {
@@ -1586,18 +1586,18 @@
       let mergeBody = null;
       try { mergeBody = mergeBodyText ? JSON.parse(mergeBodyText) : null; } catch {}
       if (!mergeRes.ok || mergeBody?.ok === false) {
-        throw new Error(`Mixed merge failed (${mergeRes.status}). ${mergeBodyText}`.trim());
+        throw new Error(`Samenvoegen van gemengde audio mislukt (${mergeRes.status}). ${mergeBodyText}`.trim());
       }
 
       const outputUrl = mergeBody?.outputUrl || mergeBody?.url || buildAudioUrl(`${MIXED_MERGE_OUTPUT_DIR}${MIXED_MERGE_OUTPUT_FILENAME}`);
       mergedAudioVersion = String(Date.now());
       stopMergedPlayback();
       updateProducedAudioButtons(false);
-      log(`Merged file produced: ${outputUrl}`);
-      setStatus("Idle");
+      log(`Samengevoegd bestand gemaakt: ${outputUrl}`);
+      setStatus("Gereed");
     } catch (e) {
-      log(`Merge JWT failed: ${e?.message || e}`);
-      setStatus("Error");
+      log(`Samenvoegen via JWT mislukt: ${e?.message || e}`);
+      setStatus("Fout");
     } finally {
       setProduceMergedJwtButtonBusy(false);
     }
@@ -1605,7 +1605,7 @@
 
   async function onProduceMergedJwt() {
     clearProducedAudioForNewRun();
-    setProduceMergedJwtButtonBusy(true, "Producing...");
+    setProduceMergedJwtButtonBusy(true, "Maken...");
     try {
       if (!requiresAuth) {
         await onProduceLocalTts();
@@ -1613,12 +1613,12 @@
       }
       await onMakePartsMergedJwt();
       if (!preparedMergedSources.length) {
-        throw new Error("No prepared sources after parts step.");
+        throw new Error("Na het voorbereiden zijn geen bronnen beschikbaar.");
       }
       await onMergeMergedJwt();
     } catch (e) {
-      log(`Produce failed: ${e?.message || e}`);
-      setStatus("Error");
+      log(`Maken mislukt: ${e?.message || e}`);
+      setStatus("Fout");
     } finally {
       setProduceMergedJwtButtonBusy(false);
     }
@@ -1635,21 +1635,21 @@
     persistModelId(modelId);
 
     if (!voiceId || !text) {
-      log("Missing required fields: Voice ID and Text are required.");
-      setStatus("Missing input");
+      log("Verplichte velden ontbreken: stem en tekst zijn verplicht.");
+      setStatus("Invoer ontbreekt");
       return;
     }
 
     const segments = parseMixedTextSegments(text);
 
-    setStatus("Producing...");
+    setStatus("Maken...");
     const blob = await buildLocalMixedAudioBlob(segments, { voiceId, modelId, outputFormat });
     setLastAudio(blob, { voiceId, modelId });
     publicMergedObjectUrl = URL.createObjectURL(blob);
     stopMergedPlayback();
     updateProducedAudioButtons(false);
-    log(`Local ElevenLabs audio produced: ${lastAudioFilename || "elevenlabs.mp3"}`);
-    setStatus("Idle");
+    log(`Lokale ElevenLabs-audio gemaakt: ${lastAudioFilename || "elevenlabs.mp3"}`);
+    setStatus("Gereed");
   }
 
   // Wire up
@@ -1712,11 +1712,11 @@
     } catch (e) {
       const err = e?.message || String(e);
       msg(els.authMsg, err, false);
-      log(`Auth init failed: ${err}`);
+      log(`Initialisatie van aanmelding mislukt: ${err}`);
       if (requiresAuth) setSignedOutState();
     }
   })();
 
-  setStatus("Idle");
-  log("Ready.");
+  setStatus("Gereed");
+  log("Gereed.");
 })();

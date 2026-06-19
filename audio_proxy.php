@@ -19,7 +19,7 @@ function requested_audio_url(): string
 {
     $path = trim((string)($_GET['path'] ?? ''));
     if ($path === '' || str_contains($path, "\0")) {
-        audio_proxy_error('Audio path is required.', 400);
+        audio_proxy_error('Een audiopad is verplicht.', 400);
     }
 
     $normalized = '/' . ltrim($path, '/');
@@ -27,7 +27,7 @@ function requested_audio_url(): string
         str_contains($normalized, '..')
         || !preg_match('#^/sounds/(?:nl/speech|general)/[A-Za-z0-9._/-]+\.mp3$#', $normalized)
     ) {
-        audio_proxy_error('Audio path is not allowed.', 400);
+        audio_proxy_error('Dit audiopad is niet toegestaan.', 400);
     }
 
     return url_sound(substr($normalized, strlen('/sounds/')));
@@ -46,7 +46,7 @@ function fetch_audio(string $url): array
         $body = curl_exec($ch);
         if ($body === false) {
             $error = curl_error($ch);
-            audio_proxy_error('Could not download audio: ' . $error, 502);
+            audio_proxy_error('Audio kon niet worden gedownload: ' . $error, 502);
         }
         $status = (int)curl_getinfo($ch, CURLINFO_RESPONSE_CODE);
         $contentType = (string)curl_getinfo($ch, CURLINFO_CONTENT_TYPE);
@@ -72,12 +72,12 @@ function fetch_audio(string $url): array
 }
 
 if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
-    audio_proxy_error('Use GET for audio downloads.', 405);
+    audio_proxy_error('Gebruik GET voor audiodownloads.', 405);
 }
 
 $response = fetch_audio(requested_audio_url());
 if ($response['status'] < 200 || $response['status'] >= 300 || $response['body'] === '') {
-    audio_proxy_error('Online audio could not be downloaded.', 502);
+    audio_proxy_error('De online audio kon niet worden gedownload.', 502);
 }
 
 header('Content-Type: audio/mpeg');

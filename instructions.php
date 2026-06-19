@@ -10,7 +10,7 @@ if (!audiocreator_is_authenticated()) {
 
 $instructions = file_get_contents(__DIR__ . '/readme.md');
 if ($instructions === false) {
-    $instructions = 'Instructions could not be loaded.';
+    $instructions = 'De instructies konden niet worden geladen.';
 }
 
 function render_inline_markdown(string $text): string
@@ -114,11 +114,11 @@ function render_markdown(string $markdown): string
 $instructionsHtml = render_markdown($instructions);
 ?>
 <!doctype html>
-<html lang="en">
+<html lang="nl">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Instructions - audiocreator</title>
+  <title>Instructies - audiocreator</title>
   <link rel="stylesheet" href="./tabler/core/dist/css/tabler.min.css" />
   <link rel="stylesheet" href="./tabler/icons-webfont/dist/tabler-icons.min.css" />
   <link rel="stylesheet" href="./elevenlabs-howler.css?v=<?= (int)filemtime(__DIR__ . '/elevenlabs-howler.css') ?>" />
@@ -131,12 +131,12 @@ $instructionsHtml = render_markdown($instructions);
           <span class="avatar avatar-sm bg-primary-lt me-2">
             <i class="ti ti-book-2"></i>
           </span>
-          audiocreator instructions
+          audiocreator-instructies
         </div>
         <div class="ms-auto">
           <a class="btn btn-primary" href="./index.php">
             <i class="ti ti-arrow-left me-1"></i>
-            Back to audiocreator
+            Terug naar audiocreator
           </a>
         </div>
       </div>

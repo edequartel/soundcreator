@@ -12,14 +12,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         header('Location: ' . strtok((string)($_SERVER['REQUEST_URI'] ?? 'index.php'), '?'));
         exit;
     } else {
-        $loginError = 'Wrong password.';
+        $loginError = 'Onjuist wachtwoord.';
     }
 }
 
 $isAuthenticated = audiocreator_is_authenticated();
 ?>
 <!doctype html>
-<html lang="en">
+<html lang="nl">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -45,10 +45,10 @@ $isAuthenticated = audiocreator_is_authenticated();
             <div class="alert alert-danger" role="alert"><?= htmlspecialchars($loginError, ENT_QUOTES, 'UTF-8') ?></div>
           <?php endif; ?>
           <div class="mb-3">
-            <label class="form-label" for="password">Password</label>
+            <label class="form-label" for="password">Wachtwoord</label>
             <input id="password" class="form-control" type="password" name="password" autofocus required />
           </div>
-          <button class="btn btn-primary w-100" type="submit">Open</button>
+          <button class="btn btn-primary w-100" type="submit">Openen</button>
         </div>
       </form>
     </div>
@@ -66,15 +66,15 @@ $isAuthenticated = audiocreator_is_authenticated();
         <div class="ms-auto d-flex gap-2">
           <a class="btn" href="./instructions.php">
             <i class="ti ti-book-2 me-1"></i>
-            Instructions
+            Instructies
           </a>
           <button id="btnGitPull" type="button" class="btn">
             <i class="ti ti-git-pull-request me-1"></i>
-            <span id="btnGitPullLabel">Git Pull</span>
+            <span id="btnGitPullLabel">Bijwerken</span>
           </button>
           <form method="post">
             <input type="hidden" name="action" value="logout" />
-            <button type="submit" class="btn btn-icon" aria-label="Logout">
+            <button type="submit" class="btn btn-icon" aria-label="Uitloggen">
               <i class="ti ti-logout"></i>
             </button>
           </form>
@@ -89,20 +89,20 @@ $isAuthenticated = audiocreator_is_authenticated();
             <div class="card-body">
               <div class="row g-3">
                 <div class="col-12 col-md-8">
-                  <label class="form-label" for="voiceId">Voice</label>
+                  <label class="form-label" for="voiceId">Stem</label>
                   <div class="input-group">
                     <select id="voiceId" class="form-select">
-                      <option value="">Loading voices...</option>
+                      <option value="">Stemmen laden...</option>
                     </select>
                     <button id="btnVoiceInfo" type="button" class="btn" disabled>
                       <i class="ti ti-info-circle me-1"></i>
-                      Info
+                      Informatie
                     </button>
                   </div>
                 </div>
 
                 <div class="col-12 col-md-4">
-                  <label class="form-label" for="mergeGapMs">Merge gap</label>
+                  <label class="form-label" for="mergeGapMs">Pauze tussen fragmenten</label>
                   <div class="input-group">
                     <input id="mergeGapMs" class="form-control" type="number" min="0" max="5000" step="50" value="500" />
                     <span class="input-group-text">ms</span>
@@ -110,40 +110,40 @@ $isAuthenticated = audiocreator_is_authenticated();
                 </div>
 
                 <div class="col-12">
-                  <label class="form-label" for="text">Text</label>
-                  <textarea id="text" class="form-control audio-textarea" rows="8" placeholder="Type text to speak..."></textarea>
+                  <label class="form-label" for="text">Tekst</label>
+                  <textarea id="text" class="form-control audio-textarea" rows="8" placeholder="Typ de tekst die uitgesproken moet worden..."></textarea>
                 </div>
 
                 <div class="col-12">
                   <div class="audio-toolbar">
                     <button id="clearTextBtn" class="btn" type="button">
                       <i class="ti ti-eraser me-1"></i>
-                      Clear text
+                      Tekst wissen
                     </button>
-                    <button id="btnToggleLog" class="btn btn-icon" type="button" aria-label="Show logging" aria-controls="logPanel" aria-expanded="false">
+                    <button id="btnToggleLog" class="btn btn-icon" type="button" aria-label="Logboek tonen" aria-controls="logPanel" aria-expanded="false">
                       <i class="ti ti-terminal-2"></i>
                     </button>
 
                     <div class="btn-list audio-actions">
                       <button id="btnProduceMergedJwt" class="btn btn-primary" type="button">
                         <i class="ti ti-player-record-filled me-1"></i>
-                        Produce
+                        Maken
                       </button>
                       <button id="btnPlayMerged" class="btn" type="button">
                         <i class="ti ti-player-play me-1"></i>
-                        Play
+                        Afspelen
                       </button>
                       <button id="btnDownloadMergedFile" class="btn" type="button">
                         <i class="ti ti-download me-1"></i>
-                        Download
+                        Downloaden
                       </button>
                       <button id="btnDownloadSplitFiles" class="btn" type="button">
                         <i class="ti ti-files me-1"></i>
-                        Produce &amp; download MP3s
+                        MP3-bestanden maken en downloaden
                       </button>
                       <button id="btnDownloadSplitZip" class="btn" type="button">
                         <i class="ti ti-file-zip me-1"></i>
-                        Produce &amp; download ZIP
+                        ZIP-bestand maken en downloaden
                       </button>
                     </div>
                   </div>
@@ -154,16 +154,16 @@ $isAuthenticated = audiocreator_is_authenticated();
                     <div class="card-header py-2">
                       <h3 class="card-title">
                         <i class="ti ti-terminal-2 me-2"></i>
-                        Logging
+                        Logboek
                       </h3>
                       <div class="card-actions">
                         <button id="btnCopyLog" class="btn btn-sm" type="button">
                           <i class="ti ti-copy me-1"></i>
-                          <span id="btnCopyLogLabel">Copy</span>
+                          <span id="btnCopyLogLabel">Kopiëren</span>
                         </button>
                         <button id="btnClearLog" class="btn btn-sm" type="button">
                           <i class="ti ti-trash me-1"></i>
-                          Clear
+                          Wissen
                         </button>
                       </div>
                     </div>
@@ -202,25 +202,25 @@ $isAuthenticated = audiocreator_is_authenticated();
     <div class="modal-content">
       <form method="dialog">
         <div class="modal-header">
-          <h2 class="modal-title" id="voiceInfoTitle">Voice information</h2>
-          <button type="submit" class="btn-close" aria-label="Close"></button>
+          <h2 class="modal-title" id="voiceInfoTitle">Steminformatie</h2>
+          <button type="submit" class="btn-close" aria-label="Sluiten"></button>
         </div>
         <div class="modal-body">
           <dl class="row mb-0">
-            <dt class="col-4">Name</dt>
+            <dt class="col-4">Naam</dt>
             <dd class="col-8" id="voiceInfoName">-</dd>
-            <dt class="col-4">Language</dt>
+            <dt class="col-4">Taal</dt>
             <dd class="col-8" id="voiceInfoLanguage">-</dd>
-            <dt class="col-4">Voice ID</dt>
+            <dt class="col-4">Stem-ID</dt>
             <dd class="col-8"><code id="voiceInfoId">-</code></dd>
           </dl>
         </div>
         <div class="modal-footer">
           <a id="voiceInfoLink" class="btn" href="#" target="_blank" rel="noreferrer" hidden>
             <i class="ti ti-external-link me-1"></i>
-            Open ElevenLabs voice
+            Stem openen in ElevenLabs
           </a>
-          <button type="submit" class="btn btn-primary">Close</button>
+          <button type="submit" class="btn btn-primary">Sluiten</button>
         </div>
       </form>
     </div>
