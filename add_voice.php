@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 require __DIR__ . '/auth_guard.php';
 
-const ELEVENLABS_CONFIG_PATH = '/Users/ericdequartel/Library/Containers/com.eltima.cmd1.mas/Data/.COVolumes/_Bluehost/private/elevenlabs_config.php';
+const LOCAL_ELEVENLABS_CONFIG_PATH = '/Users/ericdequartel/Library/Containers/com.eltima.cmd1.mas/Data/.COVolumes/_Bluehost/private/elevenlabs_config.php';
 
 if (!audiocreator_is_authenticated()) {
     header('Location: ./index.php');
@@ -24,13 +24,63 @@ function add_voice_escape(string $value): string
     return htmlspecialchars($value, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
 }
 
+function add_voice_config_paths(): array
+{
+    $paths = [];
+
+    $environmentPath = getenv('ELEVENLABS_CONFIG_PATH');
+    if (is_string($environmentPath) && trim($environmentPath) !== '') {
+        $paths[] = trim($environmentPath);
+    }
+
+    $serverEnvironmentPath = $_SERVER['ELEVENLABS_CONFIG_PATH'] ?? '';
+    if (is_string($serverEnvironmentPath) && trim($serverEnvironmentPath) !== '') {
+        $paths[] = trim($serverEnvironmentPath);
+    }
+
+    $documentRoot = realpath((string)($_SERVER['DOCUMENT_ROOT'] ?? ''));
+    if ($documentRoot !== false) {
+        $paths[] = dirname($documentRoot) . '/private/elevenlabs_config.php';
+    }
+
+    $paths[] = dirname(__DIR__, 2) . '/private/elevenlabs_config.php';
+    $paths[] = dirname(__DIR__) . '/private/elevenlabs_config.php';
+
+    if (PHP_OS_FAMILY === 'Darwin') {
+        $paths[] = LOCAL_ELEVENLABS_CONFIG_PATH;
+    }
+
+    return array_values(array_unique($paths));
+}
+
+function add_voice_config_path(): string
+{
+    static $resolvedPath = null;
+    if (is_string($resolvedPath)) {
+        return $resolvedPath;
+    }
+
+    foreach (add_voice_config_paths() as $path) {
+        if (is_file($path) && is_readable($path)) {
+            $resolvedPath = $path;
+            return $resolvedPath;
+        }
+    }
+
+    throw new RuntimeException(
+        'Het ElevenLabs-configuratiebestand kon niet worden gevonden. '
+        . 'Controleer het serverpad of stel ELEVENLABS_CONFIG_PATH in.'
+    );
+}
+
 function add_voice_load_config(): array
 {
-    if (!is_readable(ELEVENLABS_CONFIG_PATH)) {
+    $configPath = add_voice_config_path();
+    if (!is_readable($configPath)) {
         throw new RuntimeException('Het ElevenLabs-configuratiebestand kan niet worden gelezen.');
     }
 
-    $config = require ELEVENLABS_CONFIG_PATH;
+    $config = require $configPath;
     if (!is_array($config)) {
         throw new RuntimeException('Het ElevenLabs-configuratiebestand bevat geen geldige lijst.');
     }
@@ -43,13 +93,14 @@ function add_voice_load_config(): array
 
 function add_voice_save_config(array $config): void
 {
-    $directory = dirname(ELEVENLABS_CONFIG_PATH);
-    if (!is_writable(ELEVENLABS_CONFIG_PATH) || !is_writable($directory)) {
+    $configPath = add_voice_config_path();
+    $directory = dirname($configPath);
+    if (!is_writable($configPath) || !is_writable($directory)) {
         throw new RuntimeException('Het ElevenLabs-configuratiebestand is niet schrijfbaar.');
     }
 
-    $backupPath = ELEVENLABS_CONFIG_PATH . '.backup-' . date('Ymd-His');
-    if (!copy(ELEVENLABS_CONFIG_PATH, $backupPath)) {
+    $backupPath = $configPath . '.backup-' . date('Ymd-His');
+    if (!copy($configPath, $backupPath)) {
         throw new RuntimeException('De reservekopie van de configuratie kon niet worden gemaakt.');
     }
 
@@ -67,12 +118,12 @@ function add_voice_save_config(array $config): void
             throw new RuntimeException('De nieuwe configuratie kon niet worden opgeslagen.');
         }
 
-        $permissions = fileperms(ELEVENLABS_CONFIG_PATH);
+        $permissions = fileperms($configPath);
         if ($permissions !== false) {
             chmod($temporaryPath, $permissions & 0777);
         }
 
-        if (!rename($temporaryPath, ELEVENLABS_CONFIG_PATH)) {
+        if (!rename($temporaryPath, $configPath)) {
             throw new RuntimeException('De nieuwe configuratie kon niet worden geactiveerd.');
         }
     } finally {
