@@ -178,6 +178,23 @@ $isAuthenticated = audiocreator_is_authenticated();
           </div>
         </main>
       </div>
+
+      <footer class="footer d-print-none">
+        <div class="container-xl">
+          <div class="bartimeus-footer">
+            <a href="https://www.bartimeus.nl/" target="_blank" rel="noopener noreferrer">
+              <img
+                class="bartimeus-footer-image"
+                src="https://www.tastenbraille.com/braillestudio-data/assets/bartimeus.png"
+                alt="Bartimeus Tekst Naar Spraak"
+              />
+            </a>
+            <a href="https://www.bartimeus.nl/" target="_blank" rel="noopener noreferrer">
+              Bartimeus Tekst Naar Spraak
+            </a>
+          </div>
+        </div>
+      </footer>
     </div>
   </div>
 

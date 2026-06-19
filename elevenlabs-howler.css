@@ -44,6 +44,20 @@
   --tblr-avatar-size: 2rem;
 }
 
+.bartimeus-footer {
+  display: flex;
+  align-items: flex-end;
+  flex-direction: column;
+  gap: 0.5rem;
+  text-align: right;
+}
+
+.bartimeus-footer-image {
+  display: block;
+  max-width: min(100%, 16rem);
+  height: auto;
+}
+
 .voice-info-dialog {
   width: min(32rem, calc(100% - 2rem));
   padding: 0;
