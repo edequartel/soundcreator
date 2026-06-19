@@ -46,7 +46,7 @@ $isDeveloper = audiocreator_is_developer();
             <div class="alert alert-danger" role="alert"><?= htmlspecialchars($loginError, ENT_QUOTES, 'UTF-8') ?></div>
           <?php endif; ?>
           <div class="mb-3">
-            <label class="form-label" for="password">Wachtwoord</label>
+            <label class="form-label" for="password">Gebruiker</label>
             <input id="password" class="form-control" type="password" name="password" autofocus required />
           </div>
           <button class="btn btn-primary w-100" type="submit">Openen</button>

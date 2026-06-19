@@ -65,8 +65,8 @@
 
 .bartimeus-footer-image {
   display: block;
-  width: 2rem !important;
-  max-width: 2rem !important;
+  width: 8rem !important;
+  max-width: 8rem !important;
   max-height: none;
   height: auto;
 }
