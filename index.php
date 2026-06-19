@@ -65,11 +65,11 @@ $isDeveloper = audiocreator_is_developer();
           audiocreator
         </div>
         <div class="ms-auto d-flex gap-2">
-          <a class="btn" href="./instructions.php">
-            <i class="ti ti-book-2 me-1"></i>
-            Instructies
-          </a>
           <?php if ($isDeveloper): ?>
+            <a class="btn" href="./instructions.php">
+              <i class="ti ti-book-2 me-1"></i>
+              Instructies
+            </a>
             <button id="btnGitPull" type="button" class="btn">
               <i class="ti ti-git-pull-request me-1"></i>
               <span id="btnGitPullLabel">Bijwerken</span>
@@ -91,17 +91,17 @@ $isDeveloper = audiocreator_is_developer();
           <div class="card audio-card">
             <div class="card-body">
               <div class="row g-3">
-                <div class="col-12 col-md-8">
+                <div class="col-12 <?= $isDeveloper ? 'col-md-8' : '' ?>">
                   <label class="form-label" for="voiceId">Stem</label>
                   <div class="input-group">
                     <select id="voiceId" class="form-select">
                       <option value="">Stemmen laden...</option>
                     </select>
-                    <button id="btnVoiceInfo" type="button" class="btn" disabled>
-                      <i class="ti ti-info-circle me-1"></i>
-                      Informatie
-                    </button>
                     <?php if ($isDeveloper): ?>
+                      <button id="btnVoiceInfo" type="button" class="btn" disabled>
+                        <i class="ti ti-info-circle me-1"></i>
+                        Informatie
+                      </button>
                       <a class="btn" href="./add_voice.php">
                         <i class="ti ti-plus me-1"></i>
                         Stem toevoegen
@@ -110,13 +110,15 @@ $isDeveloper = audiocreator_is_developer();
                   </div>
                 </div>
 
-                <div class="col-12 col-md-4">
-                  <label class="form-label" for="mergeGapMs">Pauze tussen fragmenten</label>
-                  <div class="input-group">
-                    <input id="mergeGapMs" class="form-control" type="number" min="0" max="5000" step="50" value="500" />
-                    <span class="input-group-text">ms</span>
+                <?php if ($isDeveloper): ?>
+                  <div class="col-12 col-md-4">
+                    <label class="form-label" for="mergeGapMs">Pauze tussen fragmenten</label>
+                    <div class="input-group">
+                      <input id="mergeGapMs" class="form-control" type="number" min="0" max="5000" step="50" value="500" />
+                      <span class="input-group-text">ms</span>
+                    </div>
                   </div>
-                </div>
+                <?php endif; ?>
 
                 <div class="col-12">
                   <label class="form-label" for="text">Tekst</label>
