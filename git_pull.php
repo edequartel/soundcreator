@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 require __DIR__ . '/auth_guard.php';
 
-audiocreator_require_json_auth();
+audiocreator_require_json_developer();
 
 function json_response(array $payload, int $status = 200): never
 {

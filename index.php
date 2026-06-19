@@ -17,6 +17,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 $isAuthenticated = audiocreator_is_authenticated();
+$isDeveloper = audiocreator_is_developer();
 ?>
 <!doctype html>
 <html lang="nl">
@@ -68,10 +69,12 @@ $isAuthenticated = audiocreator_is_authenticated();
             <i class="ti ti-book-2 me-1"></i>
             Instructies
           </a>
-          <button id="btnGitPull" type="button" class="btn">
-            <i class="ti ti-git-pull-request me-1"></i>
-            <span id="btnGitPullLabel">Bijwerken</span>
-          </button>
+          <?php if ($isDeveloper): ?>
+            <button id="btnGitPull" type="button" class="btn">
+              <i class="ti ti-git-pull-request me-1"></i>
+              <span id="btnGitPullLabel">Bijwerken</span>
+            </button>
+          <?php endif; ?>
           <form method="post">
             <input type="hidden" name="action" value="logout" />
             <button type="submit" class="btn btn-icon" aria-label="Uitloggen">
