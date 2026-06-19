@@ -118,7 +118,7 @@ $instructionsHtml = render_markdown($instructions);
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Instructies - audiocreator</title>
+  <title>Instructies - Sound Creator</title>
   <link rel="stylesheet" href="./tabler/core/dist/css/tabler.min.css" />
   <link rel="stylesheet" href="./tabler/icons-webfont/dist/tabler-icons.min.css" />
   <link rel="stylesheet" href="./elevenlabs-howler.css?v=<?= (int)filemtime(__DIR__ . '/elevenlabs-howler.css') ?>" />
@@ -131,12 +131,12 @@ $instructionsHtml = render_markdown($instructions);
           <span class="avatar avatar-sm bg-primary-lt me-2">
             <i class="ti ti-book-2"></i>
           </span>
-          audiocreator-instructies
+          Sound Creator-instructies
         </div>
         <div class="ms-auto">
           <a class="btn btn-primary" href="./index.php">
             <i class="ti ti-arrow-left me-1"></i>
-            Terug naar audiocreator
+            Terug naar Sound Creator
           </a>
         </div>
       </div>

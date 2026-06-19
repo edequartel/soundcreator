@@ -1,6 +1,6 @@
-# Audiocreator-instructies
+# Sound Creator-instructies
 
-Audiocreator combineert door ElevenLabs gegenereerde spraak met bestaande
+Sound Creator combineert door ElevenLabs gegenereerde spraak met bestaande
 online MP3-bestanden tot één downloadbaar MP3-bestand.
 
 ## Stappen

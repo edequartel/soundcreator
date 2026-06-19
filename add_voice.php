@@ -262,7 +262,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $error === '') {
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Stem toevoegen - audiocreator</title>
+  <title>Stem toevoegen - Sound Creator</title>
   <link rel="stylesheet" href="./tabler/core/dist/css/tabler.min.css" />
   <link rel="stylesheet" href="./tabler/icons-webfont/dist/tabler-icons.min.css" />
   <link rel="stylesheet" href="./elevenlabs-howler.css?v=<?= (int)filemtime(__DIR__ . '/elevenlabs-howler.css') ?>" />
@@ -280,7 +280,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $error === '') {
         <div class="ms-auto">
           <a class="btn btn-primary" href="./index.php">
             <i class="ti ti-arrow-left me-1"></i>
-            Terug naar audiocreator
+            Terug naar Sound Creator
           </a>
         </div>
       </div>

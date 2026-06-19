@@ -24,7 +24,7 @@ $isDeveloper = audiocreator_is_developer();
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>audiocreator</title>
+  <title>Sound Creator</title>
   <link rel="stylesheet" href="./tabler/core/dist/css/tabler.min.css" />
   <link rel="stylesheet" href="./tabler/icons-webfont/dist/tabler-icons.min.css" />
   <link rel="stylesheet" href="./elevenlabs-howler.css?v=<?= (int)filemtime(__DIR__ . '/elevenlabs-howler.css') ?>" />
@@ -41,7 +41,7 @@ $isDeveloper = audiocreator_is_developer();
               <i class="ti ti-wave-sine"></i>
             </span>
           </div>
-          <h1 class="h2 text-center mb-4">audiocreator</h1>
+          <h1 class="h2 text-center mb-4">Sound Creator</h1>
           <?php if ($loginError !== ''): ?>
             <div class="alert alert-danger" role="alert"><?= htmlspecialchars($loginError, ENT_QUOTES, 'UTF-8') ?></div>
           <?php endif; ?>
@@ -62,7 +62,7 @@ $isDeveloper = audiocreator_is_developer();
           <span class="avatar avatar-sm bg-primary-lt me-2">
             <i class="ti ti-wave-sine"></i>
           </span>
-          audiocreator
+          Sound Creator
         </div>
         <div class="ms-auto d-flex gap-2">
           <?php if ($isDeveloper): ?>
