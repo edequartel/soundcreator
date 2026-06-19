@@ -192,7 +192,7 @@ $isDeveloper = audiocreator_is_developer();
         <div class="container-xl">
           <div class="bartimeus-footer">
             <a class="bartimeus-footer-text" href="https://www.bartimeus.nl/" target="_blank" rel="noopener noreferrer">
-              Bartimeus Tekst Naar Spraak
+              Dit is een Bartiméus Onderwijs innovatie
             </a>
             <a class="bartimeus-footer-logo" href="https://www.bartimeus.nl/" target="_blank" rel="noopener noreferrer">
               <img

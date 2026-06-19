@@ -58,13 +58,14 @@
 
 .bartimeus-footer-logo {
   flex: 0 0 auto;
+  align-self: flex-end;
 }
 
 .bartimeus-footer-image {
   display: block;
   width: auto;
-  max-width: 8rem;
-  max-height: 2.5rem;
+  max-width: 2rem;
+  max-height: 0.625rem;
   height: auto;
 }
 
@@ -150,8 +151,8 @@
 
 @media (max-width: 767.98px) {
   .bartimeus-footer {
-    align-items: flex-start;
-    flex-direction: column;
+    align-items: center;
+    flex-direction: row;
   }
 
   .audio-toolbar {
