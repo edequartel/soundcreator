@@ -27,7 +27,7 @@ $isDeveloper = audiocreator_is_developer();
   <title>audiocreator</title>
   <link rel="stylesheet" href="./tabler/core/dist/css/tabler.min.css" />
   <link rel="stylesheet" href="./tabler/icons-webfont/dist/tabler-icons.min.css" />
-  <link rel="stylesheet" href="./elevenlabs-howler.css" />
+  <link rel="stylesheet" href="./elevenlabs-howler.css?v=<?= (int)filemtime(__DIR__ . '/elevenlabs-howler.css') ?>" />
 </head>
 <body>
 <?php if (!$isAuthenticated): ?>

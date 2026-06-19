@@ -45,27 +45,29 @@
 }
 
 .bartimeus-footer {
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
-  justify-content: space-between;
   gap: 1rem;
+  width: 100%;
 }
 
 .bartimeus-footer-text {
   color: var(--tblr-secondary-color);
-  font-size: 0.875rem;
+  font-size: 1rem;
 }
 
 .bartimeus-footer-logo {
-  flex: 0 0 auto;
-  align-self: flex-end;
+  display: block;
+  justify-self: end;
+  line-height: 0;
 }
 
 .bartimeus-footer-image {
   display: block;
-  width: auto;
-  max-width: 2rem;
-  max-height: 0.625rem;
+  width: 2rem !important;
+  max-width: 2rem !important;
+  max-height: none;
   height: auto;
 }
 
@@ -151,8 +153,7 @@
 
 @media (max-width: 767.98px) {
   .bartimeus-footer {
-    align-items: center;
-    flex-direction: row;
+    grid-template-columns: minmax(0, 1fr) auto;
   }
 
   .audio-toolbar {
