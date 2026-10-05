@@ -17,12 +17,20 @@
 
 .audio-toolbar {
   display: flex;
+  flex-wrap: wrap;
   align-items: flex-start;
   justify-content: space-between;
   gap: 1rem;
 }
 
+.audio-toolbar > .btn {
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
 .audio-actions {
+  flex: 1;
+  min-width: 0;
   justify-content: flex-end;
 }
 

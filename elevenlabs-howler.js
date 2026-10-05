@@ -49,7 +49,7 @@
     btnDownloadMergedFile: $("btnDownloadMergedFile"),
     btnDownloadSplitFiles: $("btnDownloadSplitFiles"),
     btnDownloadSplitZip: $("btnDownloadSplitZip"),
-    chkZipIndexFilenames: $("chkZipIndexFilenames"),
+    chkIndexFilenames: $("chkIndexFilenames"),
     btnRefreshCredits: $("btnRefreshCredits"),
     creditSummary: $("creditSummary"),
     creditUsed: $("creditUsed"),
@@ -958,14 +958,14 @@
     return "map Downloads (of de ingestelde downloadmap van de browser)";
   }
 
-  function buildSplitFilename(index, rawText) {
+  function buildSplitFilename(rawText) {
     const textPart = safeFilenamePart(rawText).slice(0, 40) || "part";
-    return `elevenlabs-part-${String(index).padStart(3, "0")}-${textPart}.mp3`;
+    return `${textPart}.mp3`;
   }
 
-  function buildZipEntryFilename(item, totalFiles) {
-    if (!els.chkZipIndexFilenames?.checked || totalFiles <= 1) return item.filename;
-    return `${String(item.index).padStart(3, "0")}-${item.filename}`;
+  function buildIndexedDownloadFilename(item, totalFiles) {
+    if (!els.chkIndexFilenames?.checked || totalFiles <= 1) return item.filename;
+    return `${String(item.index).padStart(3, "0")}.${item.filename}`;
   }
 
   async function sleep(ms) {
@@ -1128,7 +1128,7 @@
     for (const groupText of groups) {
       try {
         const stem = `split-${Date.now()}-${String(index).padStart(3, "0")}`;
-        const filename = buildSplitFilename(index, groupText);
+        const filename = buildSplitFilename(groupText);
         const result = await buildBlobForMixedGroup(groupText, { voiceId, modelId, outputFormat, stem });
         readyDownloads.push({ filename, blob: result.value, index });
         log(`Split bestand klaar [deel ${index}]: ${filename}`);
@@ -1166,8 +1166,9 @@
       setStatus("Gesplitste downloads voorbereiden…");
       const { groups, readyDownloads, completed } = await buildSplitDownloads({ voiceId, text, modelId, outputFormat });
       for (const item of readyDownloads) {
-        downloadBlobViaAnchor(item.blob, item.filename);
-        log(`Download gestart [deel ${item.index}]: ${item.filename}`);
+        const filename = buildIndexedDownloadFilename(item, readyDownloads.length);
+        downloadBlobViaAnchor(item.blob, filename);
+        log(`Download gestart [deel ${item.index}]: ${filename}`);
         await sleep(750);
       }
       log(`Gesplitste download gereed: ${completed}/${groups.length} bestanden gestart.`);
@@ -1211,7 +1212,7 @@
       const { groups, readyDownloads, completed } = await buildSplitDownloads({ voiceId, text, modelId, outputFormat });
       const zip = new JSZip();
       for (const item of readyDownloads) {
-        const zipEntryFilename = buildZipEntryFilename(item, readyDownloads.length);
+        const zipEntryFilename = buildIndexedDownloadFilename(item, readyDownloads.length);
         zip.file(zipEntryFilename, item.blob);
         if (zipEntryFilename !== item.filename) {
           log(`ZIP-bestandsnaam [deel ${item.index}]: ${zipEntryFilename}`);
