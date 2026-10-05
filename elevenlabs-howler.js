@@ -18,6 +18,8 @@
     userEmail: $("userEmail"),
     btnGitPull: $("btnGitPull"),
     btnGitPullLabel: $("btnGitPullLabel"),
+    btnSoundHelp: $("btnSoundHelp"),
+    soundHelpModal: $("soundHelpModal"),
     btnToggleLog: $("btnToggleLog"),
     btnToggleLogLabel: $("btnToggleLogLabel"),
     btnCopyLog: $("btnCopyLog"),
@@ -356,6 +358,12 @@
     }
     if (els.voiceInfoModal?.showModal) {
       els.voiceInfoModal.showModal();
+    }
+  }
+
+  function onSoundHelpClick() {
+    if (els.soundHelpModal?.showModal) {
+      els.soundHelpModal.showModal();
     }
   }
 
@@ -1660,6 +1668,7 @@
   els.btnCopyLog?.addEventListener("click", () => { void onCopyLog(); });
   els.btnClearLog?.addEventListener("click", onClearLog);
   els.btnGitPull?.addEventListener("click", onGitPull);
+  els.btnSoundHelp?.addEventListener("click", onSoundHelpClick);
   els.btnDownload?.addEventListener("click", onDownload);
   els.btnProduceMergedJwt?.addEventListener("click", onProduceMergedJwt);
   els.btnPlayMerged?.addEventListener("click", onPlayMerged);

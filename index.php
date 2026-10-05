@@ -46,7 +46,7 @@ $isDeveloper = audiocreator_is_developer();
             <div class="alert alert-danger" role="alert"><?= htmlspecialchars($loginError, ENT_QUOTES, 'UTF-8') ?></div>
           <?php endif; ?>
           <div class="mb-3">
-            <label class="form-label" for="password">Gebruiker</label>
+            <label class="form-label" for="password">Toegangscode</label>
             <input id="password" class="form-control" type="password" name="password" autofocus required />
           </div>
           <button class="btn btn-primary w-100" type="submit">Openen</button>
@@ -65,6 +65,9 @@ $isDeveloper = audiocreator_is_developer();
           Sound Creator
         </div>
         <div class="ms-auto d-flex gap-2">
+          <button id="btnSoundHelp" type="button" class="btn btn-icon" aria-label="Help: sounds genereren" aria-controls="soundHelpModal">
+            <i class="ti ti-help-circle"></i>
+          </button>
           <?php if ($isDeveloper): ?>
             <a class="btn" href="./instructions.php">
               <i class="ti ti-book-2 me-1"></i>
@@ -238,6 +241,30 @@ $isDeveloper = audiocreator_is_developer();
             Stem openen in ElevenLabs
           </a>
           <button type="submit" class="btn btn-primary">Sluiten</button>
+        </div>
+      </form>
+    </div>
+  </dialog>
+
+  <dialog class="voice-info-dialog sound-help-dialog" id="soundHelpModal" aria-labelledby="soundHelpTitle">
+    <div class="modal-content">
+      <form method="dialog">
+        <div class="modal-header">
+          <h2 class="modal-title" id="soundHelpTitle">Sounds genereren</h2>
+          <button type="submit" class="btn-close" aria-label="Sluiten"></button>
+        </div>
+        <div class="modal-body">
+          <ol class="sound-help-steps">
+            <li>Kies bovenaan de stem waarmee de tekst moet worden uitgesproken.</li>
+            <li>Typ of plak de tekst in het tekstvak. Gebruik korte alinea's voor een natuurlijker resultaat.</li>
+            <li>Klik op <strong>Maken</strong> en wacht tot de audio klaar is.</li>
+            <li>Gebruik <strong>Afspelen</strong> om het resultaat te controleren.</li>
+            <li>Klik op <strong>Downloaden</strong> om het gemaakte MP3-bestand op te slaan.</li>
+          </ol>
+          <p class="text-secondary mb-0">Werkt er iets niet? Controleer of er tekst is ingevuld en of er een stem geselecteerd is.</p>
+        </div>
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-primary">Begrepen</button>
         </div>
       </form>
     </div>

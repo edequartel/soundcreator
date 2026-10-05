@@ -87,6 +87,13 @@
   border: 0;
 }
 
+.sound-help-steps {
+  display: grid;
+  gap: 0.65rem;
+  margin: 0 0 1rem;
+  padding-left: 1.35rem;
+}
+
 .instructions-card {
   max-width: 980px;
   margin-left: auto;
