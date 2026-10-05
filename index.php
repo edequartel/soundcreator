@@ -135,6 +135,10 @@ $isDeveloper = audiocreator_is_developer();
                       Tekst wissen
                     </button>
                     <?php if ($isDeveloper): ?>
+                      <button id="btnAppendHashPerLine" class="btn" type="button">
+                        <i class="ti ti-hash me-1"></i>
+                        # achter elke regel
+                      </button>
                       <button id="btnToggleLog" class="btn btn-icon" type="button" aria-label="Logboek tonen" aria-controls="logPanel" aria-expanded="false">
                         <i class="ti ti-terminal-2"></i>
                       </button>
@@ -166,6 +170,15 @@ $isDeveloper = audiocreator_is_developer();
                     </div>
                   </div>
                 </div>
+
+                <?php if ($isDeveloper): ?>
+                  <div class="col-12">
+                    <label class="form-check audio-option-check">
+                      <input id="chkZipIndexFilenames" class="form-check-input" type="checkbox" />
+                      <span class="form-check-label">Bestanden in ZIP laten beginnen met 001, 002, 003</span>
+                    </label>
+                  </div>
+                <?php endif; ?>
 
                 <?php if ($isDeveloper): ?>
                   <div id="logPanel" class="col-12" hidden>

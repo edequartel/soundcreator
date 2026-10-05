@@ -42,12 +42,14 @@
     btnPlay: $("btnPlay"),
     btnStop: $("btnStop"),
     btnClearText: $("clearTextBtn"), // <-- added
+    btnAppendHashPerLine: $("btnAppendHashPerLine"),
     btnDownload: $("btnDownload"),
     btnProduceMergedJwt: $("btnProduceMergedJwt"),
     btnPlayMerged: $("btnPlayMerged"),
     btnDownloadMergedFile: $("btnDownloadMergedFile"),
     btnDownloadSplitFiles: $("btnDownloadSplitFiles"),
     btnDownloadSplitZip: $("btnDownloadSplitZip"),
+    chkZipIndexFilenames: $("chkZipIndexFilenames"),
     btnRefreshCredits: $("btnRefreshCredits"),
     creditSummary: $("creditSummary"),
     creditUsed: $("creditUsed"),
@@ -961,6 +963,11 @@
     return `elevenlabs-part-${String(index).padStart(3, "0")}-${textPart}.mp3`;
   }
 
+  function buildZipEntryFilename(item, totalFiles) {
+    if (!els.chkZipIndexFilenames?.checked || totalFiles <= 1) return item.filename;
+    return `${String(item.index).padStart(3, "0")}-${item.filename}`;
+  }
+
   async function sleep(ms) {
     await new Promise((resolve) => setTimeout(resolve, ms));
   }
@@ -1095,6 +1102,22 @@
     els.btnDownloadSplitZip.textContent = busy ? label : "ZIP-bestand maken en downloaden";
   }
 
+  function onAppendHashPerLine() {
+    if (!els.text) return;
+    const lines = String(els.text.value || "").split(/\r?\n/);
+    const nextValue = lines
+      .map((line) => {
+        const trimmedRight = line.replace(/\s+$/g, "");
+        if (!trimmedRight.trim()) return "";
+        return /#\s*$/.test(trimmedRight) ? trimmedRight : `${trimmedRight} #`;
+      })
+      .join("\n");
+
+    els.text.value = nextValue;
+    els.text.focus();
+    log("# toegevoegd achter elke gevulde regel.");
+  }
+
   async function buildSplitDownloads({ voiceId, text, modelId, outputFormat }) {
     const groups = parseHashSeparatedGroups(text);
     log(`${groups.length} gesplitste download${groups.length === 1 ? "" : "s"} voorbereiden op basis van #-scheidingstekens.`);
@@ -1188,7 +1211,11 @@
       const { groups, readyDownloads, completed } = await buildSplitDownloads({ voiceId, text, modelId, outputFormat });
       const zip = new JSZip();
       for (const item of readyDownloads) {
-        zip.file(item.filename, item.blob);
+        const zipEntryFilename = buildZipEntryFilename(item, readyDownloads.length);
+        zip.file(zipEntryFilename, item.blob);
+        if (zipEntryFilename !== item.filename) {
+          log(`ZIP-bestandsnaam [deel ${item.index}]: ${zipEntryFilename}`);
+        }
       }
       const zipBlob = await zip.generateAsync({ type: "blob" });
       const zipFilename = `elevenlabs-split-${String(groups.length).padStart(3, "0")}-files.zip`;
@@ -1664,6 +1691,7 @@
   els.btnPlay?.addEventListener("click", onPlay);
   els.btnStop?.addEventListener("click", onStop);
   els.btnClearText?.addEventListener("click", onClearText); // <-- added
+  els.btnAppendHashPerLine?.addEventListener("click", onAppendHashPerLine);
   els.btnToggleLog?.addEventListener("click", onToggleLog);
   els.btnCopyLog?.addEventListener("click", () => { void onCopyLog(); });
   els.btnClearLog?.addEventListener("click", onClearLog);
