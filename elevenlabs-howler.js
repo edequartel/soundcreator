@@ -965,7 +965,7 @@
 
   function buildIndexedDownloadFilename(item, totalFiles) {
     if (!els.chkIndexFilenames?.checked || totalFiles <= 1) return item.filename;
-    return `${String(item.index).padStart(3, "0")}.${item.filename}`;
+    return `${String(item.index).padStart(3, "0")}-${item.filename}`;
   }
 
   async function sleep(ms) {
