@@ -173,10 +173,24 @@ $isDeveloper = audiocreator_is_developer();
 
                 <?php if ($isDeveloper): ?>
                   <div class="col-12">
-                    <label class="form-check audio-option-check">
-                      <input id="chkIndexFilenames" class="form-check-input" type="checkbox" />
-                      <span class="form-check-label">MP3-bestanden (los of in ZIP) laten beginnen met 001, 002, 003</span>
-                    </label>
+                    <div class="row g-2 align-items-end">
+                      <div class="col-12 col-md-6">
+                        <label class="form-label" for="customDownloadFilename">Gewenste naam MP3-download</label>
+                        <input id="customDownloadFilename" class="form-control" type="text" placeholder="Bijvoorbeeld: mijn-audio.mp3" disabled />
+                      </div>
+                      <div class="col-12 col-md-6">
+                        <label class="form-check audio-option-check">
+                          <input id="chkUseCustomDownloadFilename" class="form-check-input" type="checkbox" />
+                          <span class="form-check-label">Deze naam gebruiken voor MP3-download</span>
+                        </label>
+                      </div>
+                      <div class="col-12">
+                        <label class="form-check audio-option-check">
+                          <input id="chkIndexFilenames" class="form-check-input" type="checkbox" />
+                          <span class="form-check-label">MP3-bestanden (los of in ZIP) laten beginnen met 001, 002, 003</span>
+                        </label>
+                      </div>
+                    </div>
                   </div>
                 <?php endif; ?>
 

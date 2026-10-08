@@ -49,6 +49,8 @@
     btnDownloadMergedFile: $("btnDownloadMergedFile"),
     btnDownloadSplitFiles: $("btnDownloadSplitFiles"),
     btnDownloadSplitZip: $("btnDownloadSplitZip"),
+    customDownloadFilename: $("customDownloadFilename"),
+    chkUseCustomDownloadFilename: $("chkUseCustomDownloadFilename"),
     chkIndexFilenames: $("chkIndexFilenames"),
     btnRefreshCredits: $("btnRefreshCredits"),
     creditSummary: $("creditSummary"),
@@ -586,6 +588,28 @@
       .replace(/[^a-z0-9._-]+/gi, "-")
       .replace(/^-+|-+$/g, "")
       .slice(0, 80);
+  }
+
+  function normalizeMp3Filename(filename) {
+    const clean = safeFilenamePart(filename);
+    if (!clean) return "";
+    return /\.mp3$/i.test(clean) ? clean : `${clean}.mp3`;
+  }
+
+  function getCustomMp3DownloadFilename() {
+    if (!els.chkUseCustomDownloadFilename?.checked) return "";
+    return normalizeMp3Filename(els.customDownloadFilename?.value || "");
+  }
+
+  function getPreferredMp3DownloadFilename(fallback) {
+    return getCustomMp3DownloadFilename() || fallback || "elevenlabs.mp3";
+  }
+
+  function updateCustomDownloadFilenameState({ focus = true } = {}) {
+    if (!els.customDownloadFilename) return;
+    const enabled = !!els.chkUseCustomDownloadFilename?.checked;
+    els.customDownloadFilename.disabled = !enabled;
+    if (enabled && focus) els.customDownloadFilename.focus();
   }
 
   function setLastAudio(blob, { voiceId, modelId } = {}) {
@@ -1410,7 +1434,7 @@
       return;
     }
 
-    const filename = lastAudioFilename || "elevenlabs.mp3";
+    const filename = getPreferredMp3DownloadFilename(lastAudioFilename);
 
     try {
       setStatus("Download voorbereiden…");
@@ -1524,13 +1548,27 @@
 
   async function onDownloadMergedFile() {
     try {
+      const filename = getPreferredMp3DownloadFilename(lastAudioFilename || "merged.mp3");
       if (publicMergedObjectUrl && lastAudioBlob) {
-        downloadBlobViaAnchor(lastAudioBlob, lastAudioFilename || "elevenlabs.mp3");
-        log(`Download gestart: ${lastAudioFilename || "elevenlabs.mp3"}`);
-        notifyDownloadFinished(lastAudioFilename || "elevenlabs.mp3", browserDownloadDestination());
+        downloadBlobViaAnchor(lastAudioBlob, filename);
+        log(`Download gestart: ${filename}`);
+        notifyDownloadFinished(filename, browserDownloadDestination());
         return;
       }
       setStatus("Samengevoegde audio downloaden…");
+      if (getCustomMp3DownloadFilename()) {
+        const res = await fetchOnlineAudioBlobResponse(`${MIXED_MERGE_OUTPUT_DIR}${MIXED_MERGE_OUTPUT_FILENAME}`);
+        if (!res.ok) {
+          const body = await res.text().catch(() => "");
+          throw new Error(`Samengevoegde audio ophalen mislukt (${res.status}). ${body}`.trim());
+        }
+        const blob = await res.blob();
+        downloadBlobViaAnchor(blob, filename);
+        log(`Download gestart: ${filename}`);
+        notifyDownloadFinished(filename, browserDownloadDestination());
+        setStatus("Gereed");
+        return;
+      }
       const url = `${DOWNLOAD_MERGED_API_URL}?t=${Date.now()}`;
       window.location.assign(url);
       log(`Download aangevraagd via de API: ${url}`);
@@ -1704,6 +1742,7 @@
   els.btnDownloadMergedFile?.addEventListener("click", onDownloadMergedFile);
   els.btnDownloadSplitFiles?.addEventListener("click", onDownloadSplitFiles);
   els.btnDownloadSplitZip?.addEventListener("click", onDownloadSplitZip);
+  els.chkUseCustomDownloadFilename?.addEventListener("change", updateCustomDownloadFilenameState);
   els.btnRefreshCredits?.addEventListener("click", () => { void loadElevenLabsCredits(); });
   els.btnVoiceInfo?.addEventListener("click", onVoiceInfoClick);
   els.btnSignIn?.addEventListener("click", () => { void signIn(); });
@@ -1729,6 +1768,7 @@
   // Init
   if (els.btnStop) els.btnStop.disabled = true;
   if (els.btnDownload) els.btnDownload.disabled = true;
+  updateCustomDownloadFilenameState({ focus: false });
   updateProducedAudioButtons(false);
 
   loadPrefs();
