@@ -1117,13 +1117,15 @@
   function setDownloadSplitFilesButtonBusy(busy, label = "MP3-bestanden maken en downloaden") {
     if (!els.btnDownloadSplitFiles) return;
     els.btnDownloadSplitFiles.disabled = !!busy;
-    els.btnDownloadSplitFiles.textContent = busy ? label : "MP3-bestanden maken en downloaden";
+    if (busy) els.btnDownloadSplitFiles.textContent = label;
+    else els.btnDownloadSplitFiles.innerHTML = '<i class="ti ti-files me-1" aria-hidden="true"></i> Losse MP3\'s downloaden';
   }
 
   function setDownloadSplitZipButtonBusy(busy, label = "ZIP-bestand maken en downloaden") {
     if (!els.btnDownloadSplitZip) return;
     els.btnDownloadSplitZip.disabled = !!busy;
-    els.btnDownloadSplitZip.textContent = busy ? label : "ZIP-bestand maken en downloaden";
+    if (busy) els.btnDownloadSplitZip.textContent = label;
+    else els.btnDownloadSplitZip.innerHTML = '<i class="ti ti-file-zip me-1" aria-hidden="true"></i> ZIP downloaden';
   }
 
   function onAppendHashPerLine() {

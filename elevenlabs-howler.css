@@ -18,20 +18,50 @@
 .audio-toolbar {
   display: flex;
   flex-wrap: wrap;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
   gap: 1rem;
 }
 
-.audio-toolbar > .btn {
-  flex-shrink: 0;
-  white-space: nowrap;
+.audio-edit-actions,
+.audio-export-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 .audio-actions {
-  flex: 1;
   min-width: 0;
   justify-content: flex-end;
+  margin: 0;
+  gap: 0.5rem;
+}
+
+.audio-download-options {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  align-items: center;
+  gap: 1rem 1.5rem;
+  border-top: 1px solid var(--tblr-border-color);
+  padding-top: 1.25rem;
+}
+
+.audio-filename-option {
+  display: grid;
+  gap: 0.625rem;
+}
+
+.audio-filename-option .form-control:disabled {
+  background: var(--tblr-bg-surface-secondary, #f6f8fb);
+}
+
+.audio-numbering-option {
+  align-self: start;
+}
+
+.audio-export-actions {
+  grid-column: 1 / -1;
 }
 
 .audio-option-check {
@@ -184,7 +214,27 @@
     justify-content: flex-start;
   }
 
-  .audio-toolbar > .btn,
+  .audio-download-options {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .audio-actions {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .audio-actions .btn {
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+    min-width: 0;
+    white-space: normal;
+  }
+
+  .audio-export-actions > .btn {
+    flex: 1 1 12rem;
+    white-space: normal;
+  }
+
   .audio-actions .btn {
     width: 100%;
   }

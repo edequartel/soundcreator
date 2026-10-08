@@ -130,19 +130,21 @@ $isDeveloper = audiocreator_is_developer();
 
                 <div class="col-12">
                   <div class="audio-toolbar">
-                    <button id="clearTextBtn" class="btn" type="button">
-                      <i class="ti ti-eraser me-1"></i>
-                      Tekst wissen
-                    </button>
-                    <?php if ($isDeveloper): ?>
-                      <button id="btnAppendHashPerLine" class="btn" type="button" aria-label="# achter elke regel">
-                        <i class="ti ti-hash me-1" aria-hidden="true"></i>
-                        achter elke regel
+                    <div class="audio-edit-actions">
+                      <button id="clearTextBtn" class="btn" type="button">
+                        <i class="ti ti-eraser me-1"></i>
+                        Tekst wissen
                       </button>
-                      <button id="btnToggleLog" class="btn btn-icon" type="button" aria-label="Logboek tonen" aria-controls="logPanel" aria-expanded="false">
-                        <i class="ti ti-terminal-2"></i>
-                      </button>
-                    <?php endif; ?>
+                      <?php if ($isDeveloper): ?>
+                        <button id="btnAppendHashPerLine" class="btn" type="button" aria-label="# achter elke regel">
+                          <i class="ti ti-hash me-1" aria-hidden="true"></i>
+                          achter elke regel
+                        </button>
+                        <button id="btnToggleLog" class="btn btn-icon" type="button" title="Logboek tonen" aria-label="Logboek tonen" aria-controls="logPanel" aria-expanded="false">
+                          <i class="ti ti-terminal-2"></i>
+                        </button>
+                      <?php endif; ?>
+                    </div>
 
                     <div class="btn-list audio-actions">
                       <button id="btnProduceMergedJwt" class="btn btn-primary" type="button">
@@ -157,38 +159,35 @@ $isDeveloper = audiocreator_is_developer();
                         <i class="ti ti-download me-1"></i>
                         Downloaden
                       </button>
-                      <?php if ($isDeveloper): ?>
-                        <button id="btnDownloadSplitFiles" class="btn" type="button">
-                          <i class="ti ti-files me-1"></i>
-                          MP3-bestanden maken en downloaden
-                        </button>
-                        <button id="btnDownloadSplitZip" class="btn" type="button">
-                          <i class="ti ti-file-zip me-1"></i>
-                          ZIP-bestand maken en downloaden
-                        </button>
-                      <?php endif; ?>
                     </div>
                   </div>
                 </div>
 
                 <?php if ($isDeveloper): ?>
                   <div class="col-12">
-                    <div class="row g-2 align-items-end">
-                      <div class="col-12 col-md-6">
-                        <label class="form-label" for="customDownloadFilename">Gewenste naam MP3-download</label>
-                        <input id="customDownloadFilename" class="form-control" type="text" placeholder="Bijvoorbeeld: mijn-audio.mp3" disabled />
-                      </div>
-                      <div class="col-12 col-md-6">
+                    <div class="audio-download-options">
+                      <div class="audio-filename-option">
                         <label class="form-check audio-option-check">
                           <input id="chkUseCustomDownloadFilename" class="form-check-input" type="checkbox" />
-                          <span class="form-check-label">Deze naam gebruiken voor MP3-download</span>
+                          <span class="form-check-label">Eigen bestandsnaam</span>
                         </label>
+                        <input id="customDownloadFilename" class="form-control" type="text" aria-label="Bestandsnaam voor MP3-download" placeholder="Bijvoorbeeld: mijn-audio.mp3" disabled />
                       </div>
-                      <div class="col-12">
+                      <div class="audio-numbering-option">
                         <label class="form-check audio-option-check">
                           <input id="chkIndexFilenames" class="form-check-input" type="checkbox" />
-                          <span class="form-check-label">MP3-bestanden (los of in ZIP) laten beginnen met 001, 002, 003</span>
+                          <span class="form-check-label">Bestanden nummeren <span class="text-secondary">(001, 002, 003)</span></span>
                         </label>
+                      </div>
+                      <div class="audio-export-actions">
+                        <button id="btnDownloadSplitFiles" class="btn" type="button">
+                          <i class="ti ti-files me-1" aria-hidden="true"></i>
+                          Losse MP3's downloaden
+                        </button>
+                        <button id="btnDownloadSplitZip" class="btn" type="button">
+                          <i class="ti ti-file-zip me-1" aria-hidden="true"></i>
+                          ZIP downloaden
+                        </button>
                       </div>
                     </div>
                   </div>
